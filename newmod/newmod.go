@@ -10,9 +10,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/zhiruili/usak/core"
-	"github.com/zhiruili/usak/osutil"
-	"github.com/zhiruili/usak/regensln"
+	"github.com/zhiruili/urem/core"
+	"github.com/zhiruili/urem/osutil"
+	"github.com/zhiruili/urem/regensln"
 )
 
 type genFileInfo struct {

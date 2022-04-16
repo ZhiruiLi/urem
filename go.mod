@@ -1,4 +1,4 @@
-module github.com/zhiruili/usak
+module github.com/zhiruili/urem
 
 go 1.18
 

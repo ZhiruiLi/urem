@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/zhiruili/usak/core"
-	"github.com/zhiruili/usak/pwsh"
+	"github.com/zhiruili/urem/core"
+	"github.com/zhiruili/urem/pwsh"
 )
 
 type Cmd struct {

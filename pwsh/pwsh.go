@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"os/exec"
 
-	"github.com/zhiruili/usak/encodeutil"
+	"github.com/zhiruili/urem/encodeutil"
 )
 
 // PowerShell struct

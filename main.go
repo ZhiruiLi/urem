@@ -5,9 +5,9 @@ import (
 	"os"
 
 	"github.com/alexflint/go-arg"
-	"github.com/zhiruili/usak/core"
-	"github.com/zhiruili/usak/newmod"
-	"github.com/zhiruili/usak/regensln"
+	"github.com/zhiruili/urem/core"
+	"github.com/zhiruili/urem/newmod"
+	"github.com/zhiruili/urem/regensln"
 )
 
 var args struct {
