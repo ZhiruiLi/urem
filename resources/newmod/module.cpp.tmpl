@@ -1,1 +1,20 @@
-hello world, i'm a template
+// Copyright {{.CopyRight}}. All Rights Reserved.
+
+#include "{{.ModuleName}}.h"
+
+#define LOCTEXT_NAMESPACE "F{{.ModuleName}}Module"
+
+void F{{.ModuleName}}Module::StartupModule()
+{
+	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
+}
+
+void F{{.ModuleName}}Module::ShutdownModule()
+{
+	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
+	// we call this function before unloading the module.
+}
+
+#undef LOCTEXT_NAMESPACE
+
+IMPLEMENT_MODULE(F{{.ModuleName}}Module, {{.ModuleName}})
