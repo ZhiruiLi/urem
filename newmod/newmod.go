@@ -12,7 +12,7 @@ import (
 
 	"github.com/zhiruili/usak/core"
 	"github.com/zhiruili/usak/osutil"
-	"github.com/zhiruili/usak/pwsh"
+	"github.com/zhiruili/usak/regensln"
 )
 
 type genFileInfo struct {
@@ -47,44 +47,6 @@ var genFileInfos = []*genFileInfo{
 		"resources/newmod/module.cpp.tmpl",
 		"Private/{{.ModuleName}}.cpp",
 	},
-}
-
-func strContains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
-
-func findFileBottomUp(p string, exts ...string) (string, error) {
-	if yes, err := osutil.IsDir(p); err != nil {
-		return "", err
-	} else if !yes {
-		p = filepath.Dir(p)
-	}
-
-	files, err := ioutil.ReadDir(p)
-	if err != nil {
-		return "", err
-	}
-
-	for _, file := range files {
-		if !file.IsDir() {
-			fext := filepath.Ext(file.Name())
-			if strContains(exts, fext) {
-				return filepath.Join(p, file.Name()), nil
-			}
-		}
-	}
-
-	next := filepath.Dir(p)
-	if next == p {
-		return "", nil
-	}
-
-	return findFileBottomUp(next, exts...)
 }
 
 const projectJsonTmpl = `{{.FormatPrefix}}
@@ -179,7 +141,7 @@ func (cmd *Cmd) generateFile(info *genFileInfo, modulePath string, fs *embed.FS)
 }
 
 func (cmd *Cmd) updateProjectJson(modulePath string) error {
-	filePath, err := findFileBottomUp(modulePath, ".uproject", ".uplugin")
+	filePath, err := osutil.FindFileBottomUp(modulePath, ".uproject", ".uplugin")
 	if err != nil {
 		return fmt.Errorf("find .uproject or .uplugin file: %w", err)
 	}
@@ -202,16 +164,7 @@ func (cmd *Cmd) updateProjectJson(modulePath string) error {
 }
 
 func (cmd *Cmd) refreshSln(modulePath string) error {
-	sh := pwsh.New()
-	stdOut, stdErr, err := sh.Execute(`(Get-ItemProperty 'Registry::HKEY_CLASSES_ROOT\Unreal.ProjectFile\DefaultIcon').'(default)'`)
-	binPath := strings.Trim(stdOut, "\"")
-	core.LogE("%s", stdErr)
-	if err != nil {
-		return fmt.Errorf("find Unreal gen project bin: %w", err)
-	}
-	core.LogD("Unreal gen project bin path %s", binPath)
-
-	filePath, err := findFileBottomUp(modulePath, ".uproject")
+	filePath, err := osutil.FindFileBottomUp(modulePath, ".uproject")
 	if err != nil {
 		return fmt.Errorf("find project file: %w", err)
 	}
@@ -220,7 +173,10 @@ func (cmd *Cmd) refreshSln(modulePath string) error {
 	}
 	core.LogD("project file path: %s", filePath)
 
-	return err
+	rCmd := regensln.Cmd{
+		ProjectFile: filePath,
+	}
+	return rCmd.Run()
 }
 
 func (cmd *Cmd) Run() (err error) {

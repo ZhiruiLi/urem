@@ -3,8 +3,19 @@ package osutil
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 )
+
+func strContains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
 
 func IsDir(path string) (bool, error) {
 	stat, err := os.Stat(path)
@@ -30,4 +41,51 @@ func MkDirIfNotExisted(path string) error {
 	}
 
 	return os.MkdirAll(path, os.ModePerm)
+}
+
+func firstDirBottomUp(p string) (string, error) {
+	for {
+		if yes, err := IsDir(p); err != nil {
+			return "", err
+		} else if yes {
+			break
+		} else {
+			parent := filepath.Dir(p)
+			if parent != p {
+				p = parent
+			} else {
+				return "", nil
+			}
+		}
+	}
+
+	return p, nil
+}
+
+func FindFileBottomUp(p string, exts ...string) (string, error) {
+	d, err := firstDirBottomUp(p)
+	if err != nil {
+		return "", err
+	}
+
+	files, err := ioutil.ReadDir(d)
+	if err != nil {
+		return "", err
+	}
+
+	for _, file := range files {
+		if !file.IsDir() {
+			fext := filepath.Ext(file.Name())
+			if strContains(exts, fext) {
+				return filepath.Join(d, file.Name()), nil
+			}
+		}
+	}
+
+	parent := filepath.Dir(d)
+	if parent == d {
+		return "", nil
+	}
+
+	return FindFileBottomUp(parent, exts...)
 }
