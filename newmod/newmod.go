@@ -100,6 +100,7 @@ func formatProjectJsonText(orignalJson string, moduleName string) string {
 
 type Cmd struct {
 	ModuleName string `arg:"positional,required"`
+	Copyright  string `arg:"-c,--copyright" help:"copyright owner"`
 	Output     string `arg:"-o,--out" help:"module file output dir" default:"."`
 }
 
