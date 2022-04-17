@@ -3,6 +3,7 @@ package osutil
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -55,30 +56,54 @@ func firstDirBottomUp(p string) (string, error) {
 	return p, nil
 }
 
-func FindFileBottomUp(p string, exts ...string) (string, error) {
-	d, err := firstDirBottomUp(p)
-	if err != nil {
-		return "", err
-	}
-
-	files, err := ioutil.ReadDir(d)
-	if err != nil {
-		return "", err
-	}
-
-	for _, file := range files {
-		if !file.IsDir() {
-			fext := filepath.Ext(file.Name())
-			if core.StrContains(exts, fext) {
-				return filepath.Join(d, file.Name()), nil
-			}
+func matchAnyPattern(s string, patterns ...string) (string, bool) {
+	for _, p := range patterns {
+		ok, err := filepath.Match(p, s)
+		if err != nil {
+			core.LogE("illegal file pattern %s, when trying to match file %s", p, s)
+			continue
+		}
+		if ok {
+			return p, true
 		}
 	}
 
-	parent := filepath.Dir(d)
-	if parent == d {
-		return "", nil
+	return "", false
+}
+
+func findFirstFileMatchPattern(files []fs.FileInfo, patterns ...string) (string, bool) {
+	for _, file := range files {
+		if !file.IsDir() {
+			_, match := matchAnyPattern(file.Name(), patterns...)
+			if match {
+				return file.Name(), true
+			}
+		}
+	}
+	return "", false
+}
+
+func FindFileBottomUp(p string, patterns ...string) (string, error) {
+	dir, err := firstDirBottomUp(p)
+	if err != nil {
+		return "", err
 	}
 
-	return FindFileBottomUp(parent, exts...)
+	for {
+		files, err := ioutil.ReadDir(dir)
+		if err != nil {
+			return "", err
+		}
+		name, ok := findFirstFileMatchPattern(files, patterns...)
+		if ok {
+			return filepath.Join(dir, name), nil
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", nil
+		}
+
+		dir = parent
+	}
 }
