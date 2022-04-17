@@ -143,7 +143,7 @@ func (cmd *Cmd) generateFile(info *genFileInfo, modulePath string, fs *embed.FS)
 }
 
 func (cmd *Cmd) updateProjectJson(modulePath string) error {
-	filePath, err := osutil.FindFileBottomUp(modulePath, ".uproject", ".uplugin")
+	filePath, err := osutil.FindFileBottomUp(modulePath, "*.uproject", "*.uplugin")
 	if err != nil {
 		return fmt.Errorf("find .uproject or .uplugin file: %w", err)
 	}
@@ -166,7 +166,7 @@ func (cmd *Cmd) updateProjectJson(modulePath string) error {
 }
 
 func (cmd *Cmd) refreshSln(modulePath string) error {
-	filePath, err := osutil.FindFileBottomUp(modulePath, ".uproject")
+	filePath, err := osutil.FindFileBottomUp(modulePath, "*.uproject")
 	if err != nil {
 		return fmt.Errorf("find project file: %w", err)
 	}
