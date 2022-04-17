@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/zhiruili/urem/core"
+	"github.com/zhiruili/urem/osutil"
 	"github.com/zhiruili/urem/pwsh"
 )
 
@@ -40,12 +41,18 @@ func refreshSln(projectFilePath string) error {
 }
 
 func (cmd *Cmd) Run() error {
-	ext := filepath.Ext(cmd.ProjectFile)
-	if ext != ".uproject" {
-		return fmt.Errorf("illegal project file, must be *.uproject file, got %s", cmd.ProjectFile)
+	filePath, err := osutil.FindFileBottomUp(cmd.ProjectFile, "*.uproject")
+	if err != nil {
+		return fmt.Errorf("find .uproject file: %w", err)
 	}
 
-	absProjectFilePath, err := filepath.Abs(cmd.ProjectFile)
+	if filePath == "" {
+		return fmt.Errorf(".uproject file no found")
+	}
+
+	core.LogD("project file path: %s", filePath)
+
+	absProjectFilePath, err := filepath.Abs(filePath)
 	if err != nil {
 		return fmt.Errorf("illegal project file path %s", cmd.ProjectFile)
 	}

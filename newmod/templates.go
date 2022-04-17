@@ -37,7 +37,7 @@ var genFileInfos = []*genFileInfo{
 const projectJsonTmpl = `{{.FormatPrefix}}
 		{
 			"Name": "{{.ModuleName}}",
-			"Type": "Runtime",
+			"Type": "{{.ModuleType}}",
 			"LoadingPhase": "{{.LoadingPhase}}"
 		}{{if .HasOtherModules}},
 		{{else}}
@@ -46,6 +46,7 @@ const projectJsonTmpl = `{{.FormatPrefix}}
 type projectJsonFormatContext struct {
 	ModuleName      string
 	HasOtherModules bool
+	ModuleType      string
 	LoadingPhase    string
 	FormatPrefix    string
 	FormatSuffix    string

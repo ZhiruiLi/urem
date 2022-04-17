@@ -80,7 +80,7 @@ func TestFormatProjectJsonText(t *testing.T) {
 	}
 
 	for i, c := range cases {
-		actual := formatProjectJsonText(c.json, "NewModule", "Default")
+		actual := formatProjectJsonText(c.json, "NewModule", "Runtime", "Default")
 		if c.expect != actual {
 			t.Errorf("%d:%s:\nexpect:\n%s\n\nactual:\n%s", i, c.name, c.expect, actual)
 		}

@@ -18,9 +18,28 @@ import (
 
 type Cmd struct {
 	Copyright    string `arg:"-c,--copyright" help:"copyright owner"`
+	ModuleType   string `arg:"-t,--type" help:"module type" default:"Runtime"`
 	LoadingPhase string `arg:"-l,--loading-phase" help:"module loading phase" default:"Default"`
 	ModuleName   string `arg:"positional,required" help:"name of the new module"`
 	OutputPath   string `arg:"positional,required" help:"module file output dir"`
+}
+
+// https://docs.unrealengine.com/4.26/en-US/API/Runtime/Projects/EHostType__Type/
+var legalModuleTypes = []string{
+	"Runtime",
+	"RuntimeNoCommandlet",
+	"RuntimeAndProgram",
+	"CookedOnly",
+	"UncookedOnly",
+	"Developer",
+	"DeveloperTool",
+	"Editor",
+	"EditorNoCommandlet",
+	"EditorAndProgram",
+	"Program",
+	"ServerOnly",
+	"ClientOnly",
+	"ClientOnlyNoCommandlet",
 }
 
 // https://docs.unrealengine.com/4.26/en-US/API/Runtime/Projects/ELoadingPhase__Type/
@@ -73,9 +92,10 @@ func (cmd *Cmd) generateFile(info *genFileInfo, modulePath string, fs *embed.FS)
 	return filePath, nil
 }
 
-func formatProjectJsonText(orignalJson string, moduleName string, loadingPhase string) string {
+func formatProjectJsonText(orignalJson string, moduleName string, moduleType string, loadingPhase string) string {
 	ctx := projectJsonFormatContext{
 		ModuleName:   moduleName,
+		ModuleType:   moduleType,
 		LoadingPhase: loadingPhase,
 	}
 
@@ -122,7 +142,7 @@ func (cmd *Cmd) updateProjectJson(modulePath string) error {
 		return fmt.Errorf("read file %s", filePath)
 	}
 
-	updated := formatProjectJsonText(string(content), cmd.ModuleName, cmd.LoadingPhase)
+	updated := formatProjectJsonText(string(content), cmd.ModuleName, cmd.ModuleType, cmd.LoadingPhase)
 	if err := ioutil.WriteFile(filePath, []byte(updated), 0644); err != nil {
 		return fmt.Errorf("write file %s", filePath)
 	}
@@ -131,19 +151,7 @@ func (cmd *Cmd) updateProjectJson(modulePath string) error {
 }
 
 func (cmd *Cmd) refreshSln(modulePath string) error {
-	filePath, err := osutil.FindFileBottomUp(modulePath, "*.uproject")
-	if err != nil {
-		return fmt.Errorf("find project file: %w", err)
-	}
-	if filePath == "" {
-		return fmt.Errorf(".uproject file no found")
-	}
-	core.LogD("project file path: %s", filePath)
-
-	rCmd := regensln.Cmd{
-		ProjectFile: filePath,
-	}
-	return rCmd.Run()
+	return (&regensln.Cmd{ProjectFile: modulePath}).Run()
 }
 
 func checkModuleName(name string) error {
@@ -174,6 +182,14 @@ func checkOutputPath(outPath string) error {
 	return nil
 }
 
+func checkModuleType(mtype string) error {
+	if !core.StrContains(legalModuleTypes, mtype) {
+		return core.IllegalArgErrorf("ModuleType", "illegal enum value, must be oneof: %s", strings.Join(legalModuleTypes, ", "))
+	}
+
+	return nil
+}
+
 func checkLoadingPhase(phase string) error {
 	if !core.StrContains(legalLoadingPhases, phase) {
 		return core.IllegalArgErrorf("LoadingPhase", "illegal enum value, must be oneof: %s", strings.Join(legalLoadingPhases, ", "))
@@ -198,6 +214,10 @@ func (cmd *Cmd) CheckArgs() error {
 	}
 
 	if err := checkOutputPath(cmd.OutputPath); err != nil {
+		return err
+	}
+
+	if err := checkModuleType(cmd.ModuleType); err != nil {
 		return err
 	}
 
