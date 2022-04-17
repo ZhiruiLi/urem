@@ -16,93 +16,24 @@ import (
 	"github.com/zhiruili/urem/regensln"
 )
 
-type genFileInfo struct {
-	name         string
-	resourcePath string
-	targetPath   string
-}
-
-var genFileInfos = []*genFileInfo{
-	{
-		"build script",
-		"resources/newmod/build.cs.tmpl",
-		"{{.ModuleName}}.build.cs",
-	},
-	{
-		"log header",
-		"resources/newmod/log.h.tmpl",
-		"Private/Log.h",
-	},
-	{
-		"log source",
-		"resources/newmod/log.cpp.tmpl",
-		"Private/Log.cpp",
-	},
-	{
-		"module header",
-		"resources/newmod/module.h.tmpl",
-		"Public/{{.ModuleName}}.h",
-	},
-	{
-		"module source",
-		"resources/newmod/module.cpp.tmpl",
-		"Private/{{.ModuleName}}.cpp",
-	},
-}
-
-const projectJsonTmpl = `{{.FormatPrefix}}
-		{
-			"Name": "{{.ModuleName}}",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		}{{if .HasOtherModules}},
-		{{else}}
-	{{end}}{{.FormatSuffix}}`
-
-type projectJsonFormatContext struct {
-	ModuleName      string
-	HasOtherModules bool
-	FormatPrefix    string
-	FormatSuffix    string
-}
-
-func formatProjectJsonText(orignalJson string, moduleName string) string {
-	ctx := projectJsonFormatContext{
-		ModuleName: moduleName,
-	}
-
-	moduleTagIdx := strings.Index(orignalJson, "\"Modules\"")
-	if moduleTagIdx < 0 {
-		closeParansIdx := strings.LastIndex(orignalJson, "}")
-		if closeParansIdx < 0 {
-			return orignalJson
-		}
-		ctx.FormatPrefix = strings.TrimRight(orignalJson[:closeParansIdx], "\t \n") + ",\n\t\"Modules\": ["
-		ctx.FormatSuffix = "]\n" + orignalJson[closeParansIdx:]
-		ctx.HasOtherModules = false
-	} else {
-		afterModelTag := orignalJson[moduleTagIdx:]
-		modelOpenBracketIdx := strings.Index(afterModelTag, "[")
-		if modelOpenBracketIdx < 0 {
-			return orignalJson
-		}
-		afterOpenBracketIdx := moduleTagIdx + modelOpenBracketIdx + 1
-		ctx.FormatPrefix = orignalJson[:afterOpenBracketIdx]
-		ctx.FormatSuffix = strings.TrimLeft(orignalJson[afterOpenBracketIdx:], "\t \n")
-		endBracketIdx := strings.Index(ctx.FormatSuffix, "]")
-		ctx.HasOtherModules = strings.TrimSpace(ctx.FormatSuffix[:endBracketIdx]) != ""
-	}
-
-	tmplEngine := template.Must(template.New("ProjectJSON").Parse(projectJsonTmpl))
-	out := new(bytes.Buffer)
-	tmplEngine.Execute(out, &ctx)
-	return out.String()
-}
-
 type Cmd struct {
-	Copyright  string `arg:"-c,--copyright" help:"copyright owner"`
-	ModuleName string `arg:"positional,required" help:"name of the new module"`
-	OutputPath string `arg:"positional,required" help:"module file output dir"`
+	Copyright    string `arg:"-c,--copyright" help:"copyright owner"`
+	LoadingPhase string `arg:"-l,--loading-phase" help:"module loading phase" default:"Default"`
+	ModuleName   string `arg:"positional,required" help:"name of the new module"`
+	OutputPath   string `arg:"positional,required" help:"module file output dir"`
+}
+
+// https://docs.unrealengine.com/4.26/en-US/API/Runtime/Projects/ELoadingPhase__Type/
+var legalLoadingPhases = []string{
+	"EarliestPossible",
+	"PostConfigInit",
+	"PostSplashScreen",
+	"PreEarlyLoadingScreen",
+	"PreLoadingScreen",
+	"PreDefault",
+	"Default",
+	"PostDefault",
+	"PostEngineInit",
 }
 
 func (cmd *Cmd) getModulePath() string {
@@ -142,6 +73,40 @@ func (cmd *Cmd) generateFile(info *genFileInfo, modulePath string, fs *embed.FS)
 	return filePath, nil
 }
 
+func formatProjectJsonText(orignalJson string, moduleName string, loadingPhase string) string {
+	ctx := projectJsonFormatContext{
+		ModuleName:   moduleName,
+		LoadingPhase: loadingPhase,
+	}
+
+	moduleTagIdx := strings.Index(orignalJson, "\"Modules\"")
+	if moduleTagIdx < 0 {
+		closeParansIdx := strings.LastIndex(orignalJson, "}")
+		if closeParansIdx < 0 {
+			return orignalJson
+		}
+		ctx.FormatPrefix = strings.TrimRight(orignalJson[:closeParansIdx], "\t \n") + ",\n\t\"Modules\": ["
+		ctx.FormatSuffix = "]\n" + orignalJson[closeParansIdx:]
+		ctx.HasOtherModules = false
+	} else {
+		afterModelTag := orignalJson[moduleTagIdx:]
+		modelOpenBracketIdx := strings.Index(afterModelTag, "[")
+		if modelOpenBracketIdx < 0 {
+			return orignalJson
+		}
+		afterOpenBracketIdx := moduleTagIdx + modelOpenBracketIdx + 1
+		ctx.FormatPrefix = orignalJson[:afterOpenBracketIdx]
+		ctx.FormatSuffix = strings.TrimLeft(orignalJson[afterOpenBracketIdx:], "\t \n")
+		endBracketIdx := strings.Index(ctx.FormatSuffix, "]")
+		ctx.HasOtherModules = strings.TrimSpace(ctx.FormatSuffix[:endBracketIdx]) != ""
+	}
+
+	tmplEngine := template.Must(template.New("ProjectJSON").Parse(projectJsonTmpl))
+	out := new(bytes.Buffer)
+	tmplEngine.Execute(out, &ctx)
+	return out.String()
+}
+
 func (cmd *Cmd) updateProjectJson(modulePath string) error {
 	filePath, err := osutil.FindFileBottomUp(modulePath, "*.uproject", "*.uplugin")
 	if err != nil {
@@ -157,7 +122,7 @@ func (cmd *Cmd) updateProjectJson(modulePath string) error {
 		return fmt.Errorf("read file %s", filePath)
 	}
 
-	updated := formatProjectJsonText(string(content), cmd.ModuleName)
+	updated := formatProjectJsonText(string(content), cmd.ModuleName, cmd.LoadingPhase)
 	if err := ioutil.WriteFile(filePath, []byte(updated), 0644); err != nil {
 		return fmt.Errorf("write file %s", filePath)
 	}
@@ -181,7 +146,7 @@ func (cmd *Cmd) refreshSln(modulePath string) error {
 	return rCmd.Run()
 }
 
-func CheckModuleName(name string) error {
+func checkModuleName(name string) error {
 	runes := []rune(name)
 	if len(runes) == 0 {
 		return core.IllegalArgErrorf("ModuleName", "empty string")
@@ -197,7 +162,7 @@ func CheckModuleName(name string) error {
 	return nil
 }
 
-func CheckOutputPath(outPath string) error {
+func checkOutputPath(outPath string) error {
 	baseName := filepath.Base(outPath)
 	if baseName != "Source" {
 		cont := core.GetUserBoolInput("Unconventional output path, should under Source dir, continue?")
@@ -209,16 +174,28 @@ func CheckOutputPath(outPath string) error {
 	return nil
 }
 
+func checkLoadingPhase(phase string) error {
+	if !core.StrContains(legalLoadingPhases, phase) {
+		return core.IllegalArgErrorf("LoadingPhase", "illegal enum value, must be oneof: %s", strings.Join(legalLoadingPhases, ", "))
+	}
+
+	return nil
+}
+
 func (cmd *Cmd) CheckArgs() error {
 	if core.Global.Quite {
 		return nil
 	}
 
-	if err := CheckModuleName(cmd.ModuleName); err != nil {
+	if err := checkModuleName(cmd.ModuleName); err != nil {
 		return err
 	}
 
-	if err := CheckOutputPath(cmd.OutputPath); err != nil {
+	if err := checkOutputPath(cmd.OutputPath); err != nil {
+		return err
+	}
+
+	if err := checkLoadingPhase(cmd.LoadingPhase); err != nil {
 		return err
 	}
 
