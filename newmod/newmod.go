@@ -77,7 +77,7 @@ func formatProjectJsonText(orignalJson string, moduleName string) string {
 		if closeParansIdx < 0 {
 			return orignalJson
 		}
-		ctx.FormatPrefix = strings.TrimRight(orignalJson[:closeParansIdx], "\t \n") + ",\n\t\"Modules\": ["
+		ctx.FormatPrefix = strings.TrimRight(orignalJson[:closeParansIdx], "\t \r\n") + ",\n\t\"Modules\": ["
 		ctx.FormatSuffix = "]\n" + orignalJson[closeParansIdx:]
 		ctx.HasOtherModules = false
 	} else {
@@ -88,7 +88,7 @@ func formatProjectJsonText(orignalJson string, moduleName string) string {
 		}
 		afterOpenBracketIdx := moduleTagIdx + modelOpenBracketIdx + 1
 		ctx.FormatPrefix = orignalJson[:afterOpenBracketIdx]
-		ctx.FormatSuffix = strings.TrimLeft(orignalJson[afterOpenBracketIdx:], "\t \n")
+		ctx.FormatSuffix = strings.TrimLeft(orignalJson[afterOpenBracketIdx:], "\t \r\n")
 		endBracketIdx := strings.Index(ctx.FormatSuffix, "]")
 		ctx.HasOtherModules = strings.TrimSpace(ctx.FormatSuffix[:endBracketIdx]) != ""
 	}
@@ -212,6 +212,12 @@ func CheckOutputPath(outPath string) error {
 func (cmd *Cmd) CheckArgs() error {
 	if core.Global.Quite {
 		return nil
+	}
+
+	if absPath, err := filepath.Abs(cmd.OutputPath); err != nil {
+		return core.IllegalArgErrorf("OutputPath", "illegal path")
+	} else {
+		cmd.OutputPath = absPath
 	}
 
 	if err := CheckModuleName(cmd.ModuleName); err != nil {
