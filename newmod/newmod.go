@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"unicode"
 
 	"github.com/zhiruili/urem/core"
 	"github.com/zhiruili/urem/osutil"
@@ -99,13 +100,13 @@ func formatProjectJsonText(orignalJson string, moduleName string) string {
 }
 
 type Cmd struct {
-	ModuleName string `arg:"positional,required"`
 	Copyright  string `arg:"-c,--copyright" help:"copyright owner"`
-	Output     string `arg:"-o,--out" help:"module file output dir" default:"."`
+	ModuleName string `arg:"positional,required" help:"name of the new module"`
+	OutputPath string `arg:"positional,required" help:"module file output dir"`
 }
 
 func (cmd *Cmd) getModulePath() string {
-	return filepath.Join(cmd.Output, cmd.ModuleName)
+	return filepath.Join(cmd.OutputPath, cmd.ModuleName)
 }
 
 func (cmd *Cmd) generateFile(info *genFileInfo, modulePath string, fs *embed.FS) (string, error) {
@@ -180,7 +181,55 @@ func (cmd *Cmd) refreshSln(modulePath string) error {
 	return rCmd.Run()
 }
 
+func CheckModuleName(name string) error {
+	runes := []rune(name)
+	if len(runes) == 0 {
+		return core.IllegalArgErrorf("ModuleName", "empty string")
+	}
+
+	if !unicode.IsUpper(runes[0]) {
+		cont := core.GetUserBoolInput("Unconventional module name, should start with upper case, continue?")
+		if !cont {
+			return fmt.Errorf("user cancel")
+		}
+	}
+
+	return nil
+}
+
+func CheckOutputPath(outPath string) error {
+	baseName := filepath.Base(outPath)
+	if baseName != "Source" {
+		cont := core.GetUserBoolInput("Unconventional output path, should under Source dir, continue?")
+		if !cont {
+			return fmt.Errorf("user cancel")
+		}
+	}
+
+	return nil
+}
+
+func (cmd *Cmd) CheckArgs() error {
+	if core.Global.Quite {
+		return nil
+	}
+
+	if err := CheckModuleName(cmd.ModuleName); err != nil {
+		return err
+	}
+
+	if err := CheckOutputPath(cmd.OutputPath); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (cmd *Cmd) Run() (err error) {
+	if err = cmd.CheckArgs(); err != nil {
+		return err
+	}
+
 	modulePath := cmd.getModulePath()
 
 	if err = osutil.MkDirIfNotExisted(modulePath); err != nil {

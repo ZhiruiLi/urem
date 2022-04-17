@@ -6,16 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-)
 
-func strContains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
+	"github.com/zhiruili/urem/core"
+)
 
 func IsDir(path string) (bool, error) {
 	stat, err := os.Stat(path)
@@ -76,7 +69,7 @@ func FindFileBottomUp(p string, exts ...string) (string, error) {
 	for _, file := range files {
 		if !file.IsDir() {
 			fext := filepath.Ext(file.Name())
-			if strContains(exts, fext) {
+			if core.StrContains(exts, fext) {
 				return filepath.Join(d, file.Name()), nil
 			}
 		}

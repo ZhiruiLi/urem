@@ -20,7 +20,11 @@ var args struct {
 var embedFs embed.FS
 
 func main() {
-	arg.MustParse(&args)
+	p := arg.MustParse(&args)
+	if p.Subcommand() == nil {
+		p.Fail("missing subcommand")
+	}
+
 	core.Global.Args = args.Args
 	core.Global.EmbedFs = embedFs
 
