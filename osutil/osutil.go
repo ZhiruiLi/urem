@@ -107,3 +107,22 @@ func FindFileBottomUp(p string, patterns ...string) (string, error) {
 		dir = parent
 	}
 }
+
+func DoInProjectRoot(path string, work func(string) error) error {
+	filePath, err := FindFileBottomUp(path, "*.uproject")
+	if err != nil {
+		return fmt.Errorf("find .uproject file: %w", err)
+	}
+
+	if filePath == "" {
+		return fmt.Errorf(".uproject file no found")
+	}
+
+	absFilePath, err := filepath.Abs(filePath)
+	if err != nil {
+		return fmt.Errorf("illegal project file path: %s", filePath)
+	}
+
+	core.LogD("project file path: %s", absFilePath)
+	return work(absFilePath)
+}

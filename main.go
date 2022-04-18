@@ -6,14 +6,16 @@ import (
 
 	"github.com/alexflint/go-arg"
 	"github.com/zhiruili/urem/core"
+	"github.com/zhiruili/urem/newignore"
 	"github.com/zhiruili/urem/newmod"
 	"github.com/zhiruili/urem/regensln"
 )
 
 var args struct {
 	core.Args
-	NewMod   *newmod.Cmd   `arg:"subcommand:newmod"`
-	RegenSln *regensln.Cmd `arg:"subcommand:regen"`
+	NewMod    *newmod.Cmd    `arg:"subcommand:newmod"`
+	NewIgnore *newignore.Cmd `arg:"subcommand:newignore"`
+	RegenSln  *regensln.Cmd  `arg:"subcommand:regen"`
 }
 
 //go:embed resources/*/*.tmpl
@@ -31,6 +33,8 @@ func main() {
 	var err error
 	if args.NewMod != nil {
 		err = args.NewMod.Run()
+	} else if args.NewIgnore != nil {
+		err = args.NewIgnore.Run()
 	} else if args.RegenSln != nil {
 		err = args.RegenSln.Run()
 	}

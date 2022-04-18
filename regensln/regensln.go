@@ -2,7 +2,6 @@ package regensln
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"github.com/zhiruili/urem/core"
@@ -41,21 +40,5 @@ func refreshSln(projectFilePath string) error {
 }
 
 func (cmd *Cmd) Run() error {
-	filePath, err := osutil.FindFileBottomUp(cmd.ProjectFile, "*.uproject")
-	if err != nil {
-		return fmt.Errorf("find .uproject file: %w", err)
-	}
-
-	if filePath == "" {
-		return fmt.Errorf(".uproject file no found")
-	}
-
-	core.LogD("project file path: %s", filePath)
-
-	absProjectFilePath, err := filepath.Abs(filePath)
-	if err != nil {
-		return fmt.Errorf("illegal project file path %s", cmd.ProjectFile)
-	}
-
-	return refreshSln(absProjectFilePath)
+	return osutil.DoInProjectRoot(cmd.ProjectFile, refreshSln)
 }
