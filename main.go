@@ -13,7 +13,7 @@ import (
 var args struct {
 	core.Args
 	NewMod   *newmod.Cmd   `arg:"subcommand:newmod"`
-	RegenSln *regensln.Cmd `arg:"subcommand:regensln"`
+	RegenSln *regensln.Cmd `arg:"subcommand:regen"`
 }
 
 //go:embed resources/*/*.tmpl
