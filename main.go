@@ -11,6 +11,17 @@ import (
 	"github.com/zhiruili/urem/regensln"
 )
 
+type SubCmd interface {
+	Run() error
+}
+
+// verify interfaces
+var (
+	_ SubCmd = (*newmod.Cmd)(nil)
+	_ SubCmd = (*newignore.Cmd)(nil)
+	_ SubCmd = (*regensln.Cmd)(nil)
+)
+
 var args struct {
 	core.Args
 	NewMod    *newmod.Cmd    `arg:"subcommand:newmod"`
@@ -23,23 +34,14 @@ var embedFs embed.FS
 
 func main() {
 	p := arg.MustParse(&args)
-	if p.Subcommand() == nil {
-		p.Fail("missing subcommand")
-	}
 
 	core.Global.Args = args.Args
 	core.Global.EmbedFs = embedFs
-
-	var err error
-	if args.NewMod != nil {
-		err = args.NewMod.Run()
-	} else if args.NewIgnore != nil {
-		err = args.NewIgnore.Run()
-	} else if args.RegenSln != nil {
-		err = args.RegenSln.Run()
-	}
-
-	if err != nil {
+	if p.Subcommand() == nil {
+		p.Fail("missing subcommand")
+	} else if cmd, ok := p.Subcommand().(SubCmd); !ok {
+		p.Fail("illegal subcommand")
+	} else if err := cmd.Run(); err != nil {
 		core.LogE("error: %s", err.Error())
 		os.Exit(-1)
 	}
