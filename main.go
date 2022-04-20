@@ -16,12 +16,19 @@ type SubCmd interface {
 	Run() error
 }
 
+type dummyCmd struct{}
+
+func (*dummyCmd) Run() error {
+	return nil
+}
+
 // verify interfaces
 var (
 	_ SubCmd = (*newmod.Cmd)(nil)
 	_ SubCmd = (*newignore.Cmd)(nil)
 	_ SubCmd = (*newformat.Cmd)(nil)
 	_ SubCmd = (*regensln.Cmd)(nil)
+	_ SubCmd = (*dummyCmd)(nil)
 )
 
 var args struct {
@@ -36,6 +43,11 @@ var args struct {
 var embedFs embed.FS
 
 func main() {
+	dummy := &dummyCmd{}
+	if dummy.Run() != nil {
+		panic("dummy")
+	}
+
 	p := arg.MustParse(&args)
 
 	core.Global.Args = args.Args
