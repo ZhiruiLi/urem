@@ -13,7 +13,7 @@ import (
 
 	"github.com/zhiruili/urem/core"
 	"github.com/zhiruili/urem/osutil"
-	"github.com/zhiruili/urem/regensln"
+	"github.com/zhiruili/urem/genvs"
 )
 
 type Cmd struct {
@@ -151,7 +151,7 @@ func (cmd *Cmd) updateProjectJson(modulePath string) error {
 }
 
 func (cmd *Cmd) refreshSln(modulePath string) error {
-	return (&regensln.Cmd{ProjectFile: modulePath}).Run()
+	return (&genvs.Cmd{ProjectFile: modulePath}).Run()
 }
 
 func checkModuleName(name string) error {

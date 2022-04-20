@@ -12,9 +12,11 @@ urem --help
 ### 刷新工程
 
 ```bash
-urem regensln PATH_TO_THE_PROJECT_FILE
+urem genvs PATH_TO_THE_PROJECT_FILE
+urem genclang PATH_TO_THE_PROJECT_FILE
 # Example:
-#  urem regensln projects/MyUeProject/MyUeProject.uproject
+#  urem genvs projects/MyUeProject/MyUeProject.uproject
+#  urem genclang projects/MyUeProject/MyUeProject.uproject
 ```
 
 ### 新增模块
@@ -24,4 +26,20 @@ urem newmod MODULE_NAME MODULE_OUTPUT_PATH
 # Example:
 #  urem newmod AnExample projects/MyUeProject/Source
 #  urem newmod AnExample projects/MyUeProject/Plugins/MyPlug/Source
+```
+
+### 新增 gitignore 模板
+
+```bash
+urem newignore PATH_TO_THE_PROJECT_FILE
+# Example:
+#  urem newignore projects/MyUeProject/MyUeProject.uproject
+```
+
+### 新增 clang-format 模板
+
+```bash
+urem newformat PATH_TO_THE_PROJECT_FILE
+# Example:
+#  urem newformat projects/MyUeProject/MyUeProject.uproject
 ```

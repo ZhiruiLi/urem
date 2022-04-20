@@ -1,4 +1,4 @@
-package regensln
+package genvs
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ func refreshSln(projectFilePath string) error {
 	core.LogD("Unreal gen project bin path %s", binPath)
 
 	pwCmd := fmt.Sprintf("& \"%s\" /projectfiles \"%s\"", binPath, projectFilePath)
-	core.LogD("Command: %s", pwCmd)
+	core.LogD("command: %s", pwCmd)
 
 	stdOut, stdErr, err = sh.Execute(pwCmd)
 	if stdOut != "" {
