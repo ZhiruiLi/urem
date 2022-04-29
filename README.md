@@ -12,34 +12,43 @@ urem --help
 ### 刷新工程
 
 ```bash
-urem genvs PATH_TO_THE_PROJECT_FILE
-urem genclang PATH_TO_THE_PROJECT_FILE
+urem gen vs PATH_TO_THE_PROJECT_FILE
+urem gen clang PATH_TO_THE_PROJECT_FILE
 # Example:
-#  urem genvs projects/MyUeProject/MyUeProject.uproject
-#  urem genclang projects/MyUeProject/MyUeProject.uproject
+#  urem gen vs projects/MyUeProject/MyUeProject.uproject
+#  urem gen clang projects/MyUeProject/MyUeProject.uproject
 ```
 
 ### 新增模块
 
 ```bash
-urem newmod MODULE_NAME MODULE_OUTPUT_PATH
+urem new mod MODULE_NAME MODULE_OUTPUT_PATH
 # Example:
-#  urem newmod AnExample projects/MyUeProject/Source
-#  urem newmod AnExample projects/MyUeProject/Plugins/MyPlug/Source
+#  urem new mod AnExample projects/MyUeProject/Source
+#  urem new mod AnExample projects/MyUeProject/Plugins/MyPlug/Source
 ```
 
 ### 新增 gitignore 模板
 
 ```bash
-urem newignore PATH_TO_THE_PROJECT_FILE
+urem new ig PATH_TO_THE_PROJECT_FILE
 # Example:
-#  urem newignore projects/MyUeProject/MyUeProject.uproject
+#  urem new ig projects/MyUeProject/MyUeProject.uproject
 ```
 
 ### 新增 clang-format 模板
 
 ```bash
-urem newformat PATH_TO_THE_PROJECT_FILE
+urem new fmt PATH_TO_THE_PROJECT_FILE
 # Example:
-#  urem newformat projects/MyUeProject/MyUeProject.uproject
+#  urem new fmt projects/MyUeProject/MyUeProject.uproject
+```
+
+### 查看枚举值
+
+``` bash
+urem ls ENUM_TYPE
+# Example:
+#  urem ls modtype
+#  urem ls loadphase
 ```
