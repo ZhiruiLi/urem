@@ -1,4 +1,4 @@
-package newmod
+package newcmd
 
 type genFileInfo struct {
 	name         string

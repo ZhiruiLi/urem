@@ -1,4 +1,4 @@
-package newmod
+package newcmd
 
 import (
 	"bytes"
@@ -12,11 +12,12 @@ import (
 	"unicode"
 
 	"github.com/zhiruili/urem/core"
+	"github.com/zhiruili/urem/gencmd"
+	"github.com/zhiruili/urem/lscmd"
 	"github.com/zhiruili/urem/osutil"
-	"github.com/zhiruili/urem/genvs"
 )
 
-type Cmd struct {
+type NewModCmd struct {
 	Copyright    string `arg:"-c,--copyright" help:"copyright owner"`
 	ModuleType   string `arg:"-t,--type" help:"module type" default:"Runtime"`
 	LoadingPhase string `arg:"-l,--loading-phase" help:"module loading phase" default:"Default"`
@@ -24,42 +25,11 @@ type Cmd struct {
 	OutputPath   string `arg:"positional,required" help:"module file output dir"`
 }
 
-// https://docs.unrealengine.com/4.26/en-US/API/Runtime/Projects/EHostType__Type/
-var legalModuleTypes = []string{
-	"Runtime",
-	"RuntimeNoCommandlet",
-	"RuntimeAndProgram",
-	"CookedOnly",
-	"UncookedOnly",
-	"Developer",
-	"DeveloperTool",
-	"Editor",
-	"EditorNoCommandlet",
-	"EditorAndProgram",
-	"Program",
-	"ServerOnly",
-	"ClientOnly",
-	"ClientOnlyNoCommandlet",
-}
-
-// https://docs.unrealengine.com/4.26/en-US/API/Runtime/Projects/ELoadingPhase__Type/
-var legalLoadingPhases = []string{
-	"EarliestPossible",
-	"PostConfigInit",
-	"PostSplashScreen",
-	"PreEarlyLoadingScreen",
-	"PreLoadingScreen",
-	"PreDefault",
-	"Default",
-	"PostDefault",
-	"PostEngineInit",
-}
-
-func (cmd *Cmd) getModulePath() string {
+func (cmd *NewModCmd) getModulePath() string {
 	return filepath.Join(cmd.OutputPath, cmd.ModuleName)
 }
 
-func (cmd *Cmd) generateFile(info *genFileInfo, modulePath string, fs *embed.FS) (string, error) {
+func (cmd *NewModCmd) generateFile(info *genFileInfo, modulePath string, fs *embed.FS) (string, error) {
 	fileContentTmpl, err := fs.ReadFile(info.resourcePath)
 	if err != nil {
 		return "", fmt.Errorf("load resouce %s: %w", info.resourcePath, err)
@@ -127,7 +97,7 @@ func formatProjectJsonText(orignalJson string, moduleName string, moduleType str
 	return out.String()
 }
 
-func (cmd *Cmd) updateProjectJson(modulePath string) error {
+func (cmd *NewModCmd) updateProjectJson(modulePath string) error {
 	filePath, err := osutil.FindFileBottomUp(modulePath, "*.uproject", "*.uplugin")
 	if err != nil {
 		return fmt.Errorf("find .uproject or .uplugin file: %w", err)
@@ -150,8 +120,8 @@ func (cmd *Cmd) updateProjectJson(modulePath string) error {
 	return nil
 }
 
-func (cmd *Cmd) refreshSln(modulePath string) error {
-	return (&genvs.Cmd{ProjectFile: modulePath}).Run()
+func (cmd *NewModCmd) refreshSln(modulePath string) error {
+	return (&gencmd.GenVsCmd{ProjectFile: modulePath}).Run()
 }
 
 func checkModuleName(name string) error {
@@ -183,22 +153,22 @@ func checkOutputPath(outPath string) error {
 }
 
 func checkModuleType(mtype string) error {
-	if !core.StrContains(legalModuleTypes, mtype) {
-		return core.IllegalArgErrorf("ModuleType", "illegal enum value, must be oneof: %s", strings.Join(legalModuleTypes, ", "))
+	if !lscmd.IsLegalModuleType(mtype) {
+		return core.IllegalArgErrorf("ModuleType", "illegal value, must be oneof: %s", lscmd.GetFmtAvailableModuleTypes(", "))
 	}
 
 	return nil
 }
 
 func checkLoadingPhase(phase string) error {
-	if !core.StrContains(legalLoadingPhases, phase) {
-		return core.IllegalArgErrorf("LoadingPhase", "illegal enum value, must be oneof: %s", strings.Join(legalLoadingPhases, ", "))
+	if !lscmd.IsLegalLoadingPhase(phase) {
+		return core.IllegalArgErrorf("LoadingPhase", "illegal value, must be oneof: %s", lscmd.GetFmtAvailableLoadingPhases(", "))
 	}
 
 	return nil
 }
 
-func (cmd *Cmd) CheckArgs() error {
+func (cmd *NewModCmd) CheckArgs() error {
 	if core.Global.Quite {
 		return nil
 	}
@@ -228,7 +198,7 @@ func (cmd *Cmd) CheckArgs() error {
 	return nil
 }
 
-func (cmd *Cmd) Run() (err error) {
+func (cmd *NewModCmd) Run() (err error) {
 	if err = cmd.CheckArgs(); err != nil {
 		return err
 	}

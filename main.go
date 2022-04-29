@@ -6,11 +6,9 @@ import (
 
 	"github.com/alexflint/go-arg"
 	"github.com/zhiruili/urem/core"
-	"github.com/zhiruili/urem/genclang"
-	"github.com/zhiruili/urem/genvs"
-	"github.com/zhiruili/urem/newformat"
-	"github.com/zhiruili/urem/newignore"
-	"github.com/zhiruili/urem/newmod"
+	"github.com/zhiruili/urem/gencmd"
+	"github.com/zhiruili/urem/lscmd"
+	"github.com/zhiruili/urem/newcmd"
 )
 
 type SubCmd interface {
@@ -25,21 +23,17 @@ func (*dummyCmd) Run() error {
 
 // verify interfaces
 var (
-	_ SubCmd = (*newmod.Cmd)(nil)
-	_ SubCmd = (*newignore.Cmd)(nil)
-	_ SubCmd = (*newformat.Cmd)(nil)
-	_ SubCmd = (*genvs.Cmd)(nil)
-	_ SubCmd = (*genclang.Cmd)(nil)
+	_ SubCmd = (*newcmd.Cmd)(nil)
+	_ SubCmd = (*gencmd.Cmd)(nil)
+	_ SubCmd = (*lscmd.Cmd)(nil)
 	_ SubCmd = (*dummyCmd)(nil)
 )
 
 var args struct {
 	core.Args
-	NewMod    *newmod.Cmd    `arg:"subcommand:newmod"`
-	NewIgnore *newignore.Cmd `arg:"subcommand:newignore"`
-	NewFormat *newformat.Cmd `arg:"subcommand:newformat"`
-	GenVS     *genvs.Cmd     `arg:"subcommand:genvs"`
-	GenClang  *genclang.Cmd  `arg:"subcommand:genclang"`
+	NewCommand *newcmd.Cmd `arg:"subcommand:new"`
+	GenCommand *gencmd.Cmd `arg:"subcommand:gen"`
+	LsCommand  *lscmd.Cmd  `arg:"subcommand:ls"`
 }
 
 //go:embed resources/*/*.tmpl

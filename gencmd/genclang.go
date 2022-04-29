@@ -1,4 +1,4 @@
-package genclang
+package gencmd
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"github.com/zhiruili/urem/pwsh"
 )
 
-type Cmd struct {
+type GenClangCmd struct {
 	Version     string `arg:"-v,--version" help:"UE version" default:"4.26"`
 	ProjectFile string `arg:"positional,required"`
 }
@@ -57,7 +57,7 @@ func refreshClang(version string, projectFilePath string) error {
 	return nil
 }
 
-func (cmd *Cmd) Run() error {
+func (cmd *GenClangCmd) Run() error {
 	return osutil.DoInProjectRoot(cmd.ProjectFile, func(projPath string) error {
 		return refreshClang(cmd.Version, projPath)
 	})

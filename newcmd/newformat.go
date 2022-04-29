@@ -1,4 +1,4 @@
-package newignore
+package newcmd
 
 import (
 	"fmt"
@@ -9,22 +9,22 @@ import (
 	"github.com/zhiruili/urem/osutil"
 )
 
-type Cmd struct {
+type NewFormatCmd struct {
 	ProjectFile string `arg:"positional,required"`
 }
 
-func generateIgnoreFile(projectFilePath string) error {
-	bs, err := core.Global.EmbedFs.ReadFile("resources/newignore/gitignore.tmpl")
+func generateClangFormatFile(projectFilePath string) error {
+	bs, err := core.Global.EmbedFs.ReadFile("resources/newformat/clang-format.tmpl")
 	if err != nil {
 		return fmt.Errorf("load ignore file template: %w", err)
 	}
 
 	dir := filepath.Dir(projectFilePath)
-	outFile := filepath.Join(dir, ".gitignore")
+	outFile := filepath.Join(dir, ".clang-format")
 	core.LogD("write file to %s", outFile)
 	return ioutil.WriteFile(outFile, bs, 0644)
 }
 
-func (cmd *Cmd) Run() error {
-	return osutil.DoInProjectRoot(cmd.ProjectFile, generateIgnoreFile)
+func (cmd *NewFormatCmd) Run() error {
+	return osutil.DoInProjectRoot(cmd.ProjectFile, generateClangFormatFile)
 }

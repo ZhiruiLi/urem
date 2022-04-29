@@ -1,4 +1,4 @@
-package genvs
+package gencmd
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/zhiruili/urem/pwsh"
 )
 
-type Cmd struct {
+type GenVsCmd struct {
 	ProjectFile string `arg:"positional,required"`
 }
 
@@ -39,6 +39,6 @@ func refreshSln(projectFilePath string) error {
 	return err
 }
 
-func (cmd *Cmd) Run() error {
+func (cmd *GenVsCmd) Run() error {
 	return osutil.DoInProjectRoot(cmd.ProjectFile, refreshSln)
 }
