@@ -25,12 +25,12 @@ var genFileInfos = []*genFileInfo{
 	{
 		"module header",
 		"resources/newmod/module.h.tmpl",
-		"Public/{{.ModuleName}}.h",
+		"Public/{{.ModuleName}}Module.h",
 	},
 	{
 		"module source",
 		"resources/newmod/module.cpp.tmpl",
-		"Private/{{.ModuleName}}.cpp",
+		"Private/{{.ModuleName}}Module.cpp",
 	},
 }
 
