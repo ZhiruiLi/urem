@@ -16,7 +16,8 @@ type GenVsCmd struct {
 
 func refreshSln(projectFilePath string) error {
 	sh := pwsh.New()
-	stdOut, stdErr, err := sh.Execute(`(Get-ItemProperty 'Registry::HKEY_CLASSES_ROOT\Unreal.ProjectFile\DefaultIcon').'(default)'`)
+	stdOut, stdErr, err := sh.Execute(
+		`(Get-ItemProperty 'Registry::HKEY_CLASSES_ROOT\Unreal.ProjectFile\DefaultIcon').'(default)'`)
 	binPath := strings.Trim(strings.TrimSpace(stdOut), "\"")
 	if stdErr != "" {
 		core.LogE("%s", stdErr)

@@ -18,7 +18,10 @@ type GenClangCmd struct {
 
 func refreshClang(version string, projectFilePath string) error {
 	sh := pwsh.New()
-	stdOut, stdErr, err := sh.Execute(`(Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EpicGames\Unreal Engine\` + version + `" -Name "InstalledDirectory")."InstalledDirectory"`)
+	stdOut, stdErr, err := sh.Execute(
+		`(Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EpicGames\Unreal Engine\` +
+			version +
+			`" -Name "InstalledDirectory")."InstalledDirectory"`)
 	engineDir := strings.Trim(strings.TrimSpace(stdOut), "\"")
 	if stdErr != "" {
 		core.LogE("%s", stdErr)
@@ -34,7 +37,8 @@ func refreshClang(version string, projectFilePath string) error {
 	projectName := strings.TrimSuffix(projectFileName, filepath.Ext(projectFileName))
 	core.LogD("detect project name %s", projectName)
 
-	pwCmd := fmt.Sprintf("& \"%s\" -mode=GenerateClangDatabase -project=\"%s\" -engine \"%s\" Development Win64", binPath, projectFilePath, projectName)
+	pwCmd := fmt.Sprintf("& \"%s\" -mode=GenerateClangDatabase -project=\"%s\" -engine \"%s\" Development Win64",
+		binPath, projectFilePath, projectName)
 	core.LogD("command: %s", pwCmd)
 
 	stdOut, stdErr, err = sh.Execute(pwCmd)

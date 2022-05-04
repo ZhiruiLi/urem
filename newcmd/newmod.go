@@ -155,7 +155,8 @@ func checkOutputPath(outPath string) error {
 
 func checkModuleType(mtype string) error {
 	if !lscmd.IsLegalModuleType(mtype) {
-		return core.IllegalArgErrorf("ModuleType", "illegal value, must be oneof: %s", lscmd.GetFmtAvailableModuleTypes(", "))
+		return core.IllegalArgErrorf("ModuleType", "illegal value, must be oneof: %s",
+			lscmd.GetFmtAvailableModuleTypes(", "))
 	}
 
 	return nil
@@ -163,7 +164,8 @@ func checkModuleType(mtype string) error {
 
 func checkLoadingPhase(phase string) error {
 	if !lscmd.IsLegalLoadingPhase(phase) {
-		return core.IllegalArgErrorf("LoadingPhase", "illegal value, must be oneof: %s", lscmd.GetFmtAvailableLoadingPhases(", "))
+		return core.IllegalArgErrorf("LoadingPhase", "illegal value, must be oneof: %s",
+			lscmd.GetFmtAvailableLoadingPhases(", "))
 	}
 
 	return nil
