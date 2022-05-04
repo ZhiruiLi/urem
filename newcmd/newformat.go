@@ -9,6 +9,7 @@ import (
 	"github.com/zhiruili/urem/osutil"
 )
 
+// NewFormatCmd 是用于创建新 clang-format 文件的子命令。
 type NewFormatCmd struct {
 	ProjectFile string `arg:"positional,required"`
 }
@@ -25,6 +26,7 @@ func generateClangFormatFile(projectFilePath string) error {
 	return ioutil.WriteFile(outFile, bs, 0644)
 }
 
+// Run 执行创建命令。
 func (cmd *NewFormatCmd) Run() error {
 	return osutil.DoInProjectRoot(cmd.ProjectFile, generateClangFormatFile)
 }

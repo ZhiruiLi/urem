@@ -4,12 +4,14 @@ import (
 	"fmt"
 )
 
+// Cmd 是 new 子命令的集合。
 type Cmd struct {
 	NewModCommand    *NewModCmd    `arg:"subcommand:mod"`
 	NewFormatCommand *NewFormatCmd `arg:"subcommand:fmt"`
 	NewIgnoreCommand *NewIgnoreCmd `arg:"subcommand:ig"`
 }
 
+// Run 实现了 subCmd 的接口。
 func (cmd *Cmd) Run() error {
 	if cmd.NewModCommand != nil {
 		return cmd.NewModCommand.Run()

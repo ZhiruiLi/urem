@@ -9,6 +9,7 @@ import (
 	"github.com/zhiruili/urem/osutil"
 )
 
+// NewIgnoreCmd 是用于创建新 gitignore 文件的子命令。
 type NewIgnoreCmd struct {
 	ProjectFile string `arg:"positional,required"`
 }
@@ -25,6 +26,7 @@ func generateIgnoreFile(projectFilePath string) error {
 	return ioutil.WriteFile(outFile, bs, 0644)
 }
 
+// Run 执行创建命令。
 func (cmd *NewIgnoreCmd) Run() error {
 	return osutil.DoInProjectRoot(cmd.ProjectFile, generateIgnoreFile)
 }

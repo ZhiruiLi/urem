@@ -11,7 +11,7 @@ import (
 	"github.com/zhiruili/urem/newcmd"
 )
 
-type SubCmd interface {
+type subCmd interface {
 	Run() error
 }
 
@@ -21,12 +21,12 @@ func (*dummyCmd) Run() error {
 	return nil
 }
 
-// verify interfaces
+// 确保 interfaces 有效。
 var (
-	_ SubCmd = (*newcmd.Cmd)(nil)
-	_ SubCmd = (*gencmd.Cmd)(nil)
-	_ SubCmd = (*lscmd.Cmd)(nil)
-	_ SubCmd = (*dummyCmd)(nil)
+	_ subCmd = (*newcmd.Cmd)(nil)
+	_ subCmd = (*gencmd.Cmd)(nil)
+	_ subCmd = (*lscmd.Cmd)(nil)
+	_ subCmd = (*dummyCmd)(nil)
 )
 
 var args struct {
@@ -51,7 +51,7 @@ func main() {
 	core.Global.EmbedFs = embedFs
 	if p.Subcommand() == nil {
 		p.Fail("missing subcommand")
-	} else if cmd, ok := p.Subcommand().(SubCmd); !ok {
+	} else if cmd, ok := p.Subcommand().(subCmd); !ok {
 		p.Fail("illegal subcommand")
 	} else if err := cmd.Run(); err != nil {
 		core.LogE("error: %s", err.Error())

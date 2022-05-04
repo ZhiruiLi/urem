@@ -25,14 +25,17 @@ var availableModuleTypes = []string{
 	"ClientOnlyNoCommandlet",
 }
 
+// GetAvailableModuleTypes 获取所有合法的 UE module 类型。
 func GetAvailableModuleTypes() []string {
 	return availableModuleTypes
 }
 
+// GetFmtAvailableModuleTypes 获取所有合法的 UE module 类型的格式化字符串。
 func GetFmtAvailableModuleTypes(sep string) string {
 	return strings.Join(availableModuleTypes, sep)
 }
 
+// IsLegalModuleType 检查一个字符串是否是一个合法的 UE module 类型。
 func IsLegalModuleType(t string) bool {
 	return core.StrContains(availableModuleTypes, t)
 }
@@ -50,22 +53,27 @@ var availableLoadingPhases = []string{
 	"PostEngineInit",
 }
 
+// GetAvailableLoadingPhases 获取所有合法的 loading phase 类型。
 func GetAvailableLoadingPhases() []string {
 	return availableLoadingPhases
 }
 
+// GetFmtAvailableLoadingPhases 获取所有合法的 loading phase 类型的格式化字符串。
 func GetFmtAvailableLoadingPhases(sep string) string {
 	return strings.Join(availableLoadingPhases, sep)
 }
 
+// IsLegalLoadingPhase 检查一个字符串是否是一个合法的 loading phase 类型。
 func IsLegalLoadingPhase(t string) bool {
 	return core.StrContains(availableLoadingPhases, t)
 }
 
+// Cmd 实现了 ls 子命令。
 type Cmd struct {
 	Target string `arg:"positional,required" help:"list target modtype/loadphase"`
 }
 
+// Run 执行 ls 子命令。
 func (cmd *Cmd) Run() error {
 	switch strings.ToLower(cmd.Target) {
 	case "modtype":

@@ -4,6 +4,7 @@ import (
 	"testing"
 )
 
+// TestFormatProjectJsonText 测试 formatProjectJsonText 函数。
 func TestFormatProjectJsonText(t *testing.T) {
 	cases := []struct {
 		name   string

@@ -17,6 +17,7 @@ import (
 	"github.com/zhiruili/urem/osutil"
 )
 
+// NewModCmd 是用于创建 UE module 的子命令。
 type NewModCmd struct {
 	Copyright    string `arg:"-c,--copyright" help:"copyright owner"`
 	ModuleType   string `arg:"-t,--type" help:"module type" default:"Runtime"`
@@ -168,7 +169,7 @@ func checkLoadingPhase(phase string) error {
 	return nil
 }
 
-func (cmd *NewModCmd) CheckArgs() error {
+func (cmd *NewModCmd) checkArgs() error {
 	if core.Global.Quite {
 		return nil
 	}
@@ -198,8 +199,9 @@ func (cmd *NewModCmd) CheckArgs() error {
 	return nil
 }
 
+// Run 执行创建 module 的操作。
 func (cmd *NewModCmd) Run() (err error) {
-	if err = cmd.CheckArgs(); err != nil {
+	if err = cmd.checkArgs(); err != nil {
 		return err
 	}
 
@@ -231,6 +233,7 @@ func (cmd *NewModCmd) Run() (err error) {
 	return nil
 
 ERREND:
+	// 如果在 debug 模式，就不删除出错时生成的文件，方便查问题
 	if core.Global.Debug {
 		return err
 	}

@@ -7,12 +7,12 @@ import (
 	"github.com/zhiruili/urem/encodeutil"
 )
 
-// PowerShell struct
+// PowerShell 是 PowerShell 对应的结构体。
 type PowerShell struct {
 	powerShell string
 }
 
-// New create new session
+// New 创建一个新的 session。
 func New() *PowerShell {
 	ps, _ := exec.LookPath("powershell.exe")
 	return &PowerShell{
@@ -20,6 +20,7 @@ func New() *PowerShell {
 	}
 }
 
+// Execute 执行一段 PowerShell 命令。
 func (p *PowerShell) Execute(args ...string) (stdOut string, stdErr string, err error) {
 	args = append([]string{"-NoProfile", "-NonInteractive"}, args...)
 	cmd := exec.Command(p.powerShell, args...)

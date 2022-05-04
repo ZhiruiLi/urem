@@ -10,6 +10,7 @@ import (
 	"github.com/zhiruili/urem/pwsh"
 )
 
+// GenClangCmd 是 gen 子命令中负责生成 clang database 的子命令。
 type GenClangCmd struct {
 	Version     string `arg:"-v,--version" help:"UE version" default:"4.26"`
 	ProjectFile string `arg:"positional,required"`
@@ -57,6 +58,7 @@ func refreshClang(version string, projectFilePath string) error {
 	return nil
 }
 
+// Run 执行生成操作。
 func (cmd *GenClangCmd) Run() error {
 	return osutil.DoInProjectRoot(cmd.ProjectFile, func(projPath string) error {
 		return refreshClang(cmd.Version, projPath)

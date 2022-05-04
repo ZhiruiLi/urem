@@ -12,6 +12,7 @@ import (
 	"github.com/zhiruili/urem/core"
 )
 
+// IsDir 检查给定路径是否是一个目录。
 func IsDir(path string) (bool, error) {
 	stat, err := os.Stat(path)
 
@@ -26,6 +27,7 @@ func IsDir(path string) (bool, error) {
 	return stat.IsDir(), nil
 }
 
+// MkDirIfNotExisted 检查指定路径是否存在，如果不存在，就创建目录。
 func MkDirIfNotExisted(path string) error {
 	yes, err := IsDir(path)
 	if err != nil {
@@ -84,6 +86,7 @@ func findFirstFileMatchPattern(files []fs.FileInfo, patterns ...string) (string,
 	return "", false
 }
 
+// FindFileBottomUp 自底向上寻找第一个符合 pattern 的文件。
 func FindFileBottomUp(p string, patterns ...string) (string, error) {
 	dir, err := firstDirBottomUp(p)
 	if err != nil {
@@ -109,6 +112,7 @@ func FindFileBottomUp(p string, patterns ...string) (string, error) {
 	}
 }
 
+// DoInProjectRoot 在 UE 的 project root 执行 work 操作。
 func DoInProjectRoot(path string, work func(string) error) error {
 	filePath, err := FindFileBottomUp(path, "*.uproject")
 	if err != nil {
@@ -128,6 +132,7 @@ func DoInProjectRoot(path string, work func(string) error) error {
 	return work(absFilePath)
 }
 
+// CopyFile 复制文件到指定路径。
 func CopyFile(src string, dst string) error {
 	in, err := os.Open(src)
 	if err != nil {

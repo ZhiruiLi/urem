@@ -9,6 +9,7 @@ const (
 	GB18030 = Charset("GB18030")
 )
 
+// ByteToString 将给定字符集的二进制数据转为 go 字符串。
 func ByteToString(byte []byte, charset Charset) string {
 	var str string
 	switch charset {

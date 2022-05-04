@@ -9,6 +9,7 @@ import (
 	"github.com/zhiruili/urem/pwsh"
 )
 
+// GenVsCmd 是 gen 子命令中负责生成 VS 工程的子命令。
 type GenVsCmd struct {
 	ProjectFile string `arg:"positional,required"`
 }
@@ -39,6 +40,7 @@ func refreshSln(projectFilePath string) error {
 	return err
 }
 
+// Run 执行生成操作。
 func (cmd *GenVsCmd) Run() error {
 	return osutil.DoInProjectRoot(cmd.ProjectFile, refreshSln)
 }
