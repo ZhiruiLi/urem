@@ -2,11 +2,12 @@ package encodeutil
 
 import "golang.org/x/text/encoding/simplifiedchinese"
 
+// Charset 表示一个合法的字符集。
 type Charset string
 
 const (
-	UTF8    = Charset("UTF-8")
-	GB18030 = Charset("GB18030")
+	UTF8    = Charset("UTF-8")   // UTF-8 编码
+	GB18030 = Charset("GB18030") // GB18030 编码
 )
 
 // ByteToString 将给定字符集的二进制数据转为 go 字符串。
