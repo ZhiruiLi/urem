@@ -80,6 +80,7 @@ func FindEngineDir(version string) (string, error) {
 	return engineDir, nil
 }
 
+// ExecuteUbt 执行 Unreal Build Tool 的命令。
 func ExecuteUbt(engineDir string, args string) error {
 	sh := pwsh.New()
 
@@ -96,6 +97,7 @@ func ExecuteUbt(engineDir string, args string) error {
 	return err
 }
 
+// ExecuteUbtGenProject 执行 Unreal Build Tool 的工程构建命令。
 func ExecuteUbtGenProject(engineDir string, mode string, projectFilePath string) error {
 	projectFileName := filepath.Base(projectFilePath)
 	projectName := strings.TrimSuffix(projectFileName, filepath.Ext(projectFileName))
