@@ -25,6 +25,7 @@ type moduleMetaInfo struct {
 	LoadingPhase string
 }
 
+// GetEngineVersion 获取工程所用的引擎版本。
 func GetEngineVersion(projectFilePath string) (string, error) {
 	content, err := ioutil.ReadFile(projectFilePath)
 	if err != nil {
@@ -44,20 +45,38 @@ func GetEngineVersion(projectFilePath string) (string, error) {
 	return file.EngineAssociation, nil
 }
 
+// FindEngineDir 获取特定版本的引擎的路径。
 func FindEngineDir(version string) (string, error) {
 	sh := pwsh.New()
 
+	if len(version) == 0 {
+		version = "*"
+	}
+
 	stdOut, stdErr, err := sh.Execute(
 		`(Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EpicGames\Unreal Engine\` +
-			version +
-			`" -Name "InstalledDirectory")."InstalledDirectory"`)
-	engineDir := strings.Trim(strings.TrimSpace(stdOut), "\"")
+			version + `").InstalledDirectory`)
+
+	sp := strings.Split(stdOut, "\n")
+	if len(sp) == 0 {
+		return "", fmt.Errorf("Unreal engine not found")
+	}
+
+	for _, dir := range sp {
+		if len(dir) != 0 {
+			core.LogD("found engine dir: %s", dir)
+		}
+	}
+
+	engineDir := strings.Trim(strings.TrimSpace(sp[0]), "\"")
 	if stdErr != "" {
 		core.LogE("%s", stdErr)
 	}
+
 	if err != nil {
 		return "", err
 	}
+
 	return engineDir, nil
 }
 

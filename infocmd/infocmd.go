@@ -57,7 +57,7 @@ func (cmd *EngineCmd) Run() error {
 
 // DefinitionCmd 是用于查找 UE 类定义位置的子命令。
 type DefinitionCmd struct {
-	Version    string   `arg:"-v,--version" help:"UE version" default:"4.26"`
+	Version    string   `arg:"-v,--version" help:"UE version"`
 	ClassNames []string `arg:"positional,required"`
 }
 
