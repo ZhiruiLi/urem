@@ -52,3 +52,19 @@ urem ls ENUM_TYPE
 #  urem ls modtype
 #  urem ls loadphase
 ```
+
+### 查看工程用的 UE 的版本和安装路径信息
+
+```bash
+urem info ue PATH_TO_THE_PROJECT_FILE
+# Example:
+#  urem info ue projects/MyUeProject/MyUeProject.uproject
+```
+
+### 搜索一个接口的定义位置
+
+```bash
+urem info def CLASS_NAME_PATTERN
+# Example:
+#  urem info def projects/MyUeProject/MyUeProject.uproject
+```

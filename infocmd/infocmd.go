@@ -10,15 +10,16 @@ import (
 	"github.com/zhiruili/urem/unreal"
 )
 
+// Cmd 是 info 子命令的集合。
 type Cmd struct {
-	IncludeCommand *IncludeCmd `arg:"subcommand:inc" help:"find include dir of a UE class."`
-	EngineCommand  *EngineCmd  `arg:"subcommand:engine" help:"print associated engine info of the prject."`
+	EngineCommand    *EngineCmd     `arg:"subcommand:ue" help:"print associated engine info of the prject."`
+	DefintionCommand *DefinitionCmd `arg:"subcommand:def" help:"find definition file of a UE class."`
 }
 
 // Run 实现了 subCmd 的接口。
 func (cmd *Cmd) Run() error {
-	if cmd.IncludeCommand != nil {
-		return cmd.IncludeCommand.Run()
+	if cmd.DefintionCommand != nil {
+		return cmd.DefintionCommand.Run()
 	} else if cmd.EngineCommand != nil {
 		return cmd.EngineCommand.Run()
 	}
@@ -26,6 +27,7 @@ func (cmd *Cmd) Run() error {
 	return fmt.Errorf("missing type: inc")
 }
 
+// EngineCmd 是用于查找工程使用的 UE 相关信息的子命令。
 type EngineCmd struct {
 	ProjectFile string `arg:"positional,required"`
 }
@@ -48,11 +50,13 @@ func printEngineInfo(projectFilePath string) error {
 	return nil
 }
 
+// Run 执行 UE 相关信息查找逻辑。
 func (cmd *EngineCmd) Run() error {
 	return osutil.DoInProjectRoot(cmd.ProjectFile, printEngineInfo)
 }
 
-type IncludeCmd struct {
+// DefinitionCmd 是用于查找 UE 类定义位置的子命令。
+type DefinitionCmd struct {
 	Version    string   `arg:"-v,--version" help:"UE version" default:"4.26"`
 	ClassNames []string `arg:"positional,required"`
 }
@@ -77,7 +81,8 @@ func fmtIncGrepResult(r *grepResult) string {
 	return prefix + dir + "/" + base
 }
 
-func (cmd *IncludeCmd) Run() error {
+// Run 执行 UE 类定义位置查找逻辑。
+func (cmd *DefinitionCmd) Run() error {
 	engineDir, err := unreal.FindEngineDir(cmd.Version)
 	if err != nil {
 		return fmt.Errorf("find Unreal engine path: %w", err)
