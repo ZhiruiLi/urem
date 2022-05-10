@@ -7,6 +7,7 @@ import (
 	"github.com/alexflint/go-arg"
 	"github.com/zhiruili/urem/core"
 	"github.com/zhiruili/urem/gencmd"
+	"github.com/zhiruili/urem/infocmd"
 	"github.com/zhiruili/urem/lscmd"
 	"github.com/zhiruili/urem/newcmd"
 )
@@ -29,11 +30,16 @@ var (
 	_ subCmd = (*dummyCmd)(nil)
 )
 
-var args struct {
+type args struct {
 	core.Args
-	NewCommand *newcmd.Cmd `arg:"subcommand:new"`
-	GenCommand *gencmd.Cmd `arg:"subcommand:gen"`
-	LsCommand  *lscmd.Cmd  `arg:"subcommand:ls"`
+	NewCommand  *newcmd.Cmd  `arg:"subcommand:new"`
+	GenCommand  *gencmd.Cmd  `arg:"subcommand:gen"`
+	LsCommand   *lscmd.Cmd   `arg:"subcommand:ls"`
+	InfoCommand *infocmd.Cmd `arg:"subcommand:info"`
+}
+
+func (args) Version() string {
+	return "URem 0.1.0"
 }
 
 //go:embed resources/*/*.tmpl
@@ -45,6 +51,7 @@ func main() {
 		panic(err)
 	}
 
+	var args args
 	p := arg.MustParse(&args)
 
 	core.Global.Args = args.Args
