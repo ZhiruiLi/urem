@@ -44,15 +44,6 @@ urem new fmt PATH_TO_THE_PROJECT_FILE
 #  urem new fmt projects/MyUeProject/MyUeProject.uproject
 ```
 
-### 查看枚举值
-
-``` bash
-urem ls ENUM_TYPE
-# Example:
-#  urem ls modtype
-#  urem ls loadphase
-```
-
 ### 查看工程用的 UE 的版本和安装路径信息
 
 ```bash
@@ -67,4 +58,13 @@ urem info ue PATH_TO_THE_PROJECT_FILE
 urem info def CLASS_NAME_PATTERN
 # Example:
 #  urem info def projects/MyUeProject/MyUeProject.uproject
+```
+
+### 查看枚举值
+
+``` bash
+urem info enum ENUM_TYPE
+# Example:
+#  urem info enum modtype
+#  urem info enum loadphase
 ```
