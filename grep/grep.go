@@ -71,14 +71,16 @@ func Grep(patterns []*Pattern, dirnames []string, needGrep FilePredicate, onFoun
 	}
 
 	go func() {
+		stopped := false
 		for {
 			item := <-ch
 			if item == nil {
 				return
 			}
 
-			if !onFound(item) {
+			if !stopped && !onFound(item) {
 				ctx.stop()
+				stopped = true
 			}
 		}
 	}()
