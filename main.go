@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"embed"
+	"fmt"
 	"os"
+	"runtime/pprof"
 
 	"github.com/alexflint/go-arg"
 	"github.com/zhiruili/urem/core"
@@ -51,6 +54,23 @@ func main() {
 
 	var args args
 	p := arg.MustParse(&args)
+
+	if len(args.PProfFile) != 0 {
+		prof, err := os.OpenFile(args.PProfFile, os.O_CREATE|os.O_RDWR, 0644)
+		if err != nil {
+			core.LogE("fail open profiling file: %s", err.Error())
+			os.Exit(-2)
+		}
+
+		defer prof.Close()
+		pprof.StartCPUProfile(bufio.NewWriter(prof))
+		defer func() {
+			pprof.StopCPUProfile()
+			fmt.Printf("done write profiling file, run:\n"+
+				"    go tool pprof -http=:9999 %s\n"+
+				"to see the result", args.PProfFile)
+		}()
+	}
 
 	core.Global.Args = args.Args
 	core.Global.EmbedFs = embedFs

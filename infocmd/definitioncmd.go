@@ -9,6 +9,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/zhiruili/urem/core"
+	"github.com/zhiruili/urem/grep"
 	"github.com/zhiruili/urem/unreal"
 )
 
@@ -27,10 +28,10 @@ func getIncSourceSearchPaths(engineDir string) []string {
 	}
 }
 
-func fmtIncGrepResult(r *grepResult) string {
-	prefix := r.Matched[1] + " "
-	base := filepath.Base(r.FileName)
-	dir := filepath.Base(filepath.Dir(r.FileName))
+func fmtIncGrepResult(item *grep.Item) string {
+	prefix := item.Matched[1] + " "
+	base := filepath.Base(item.FileName)
+	dir := filepath.Base(filepath.Dir(item.FileName))
 	if dir == "Public" || dir == "Private" || dir == "" {
 		return prefix + base
 	}
@@ -40,16 +41,16 @@ func fmtIncGrepResult(r *grepResult) string {
 
 var delimeter = color.BlueString(strings.Repeat("─", 120))
 
-func printDetailInfo(r *grepResult) {
+func printDetailInfo(item *grep.Item) {
 	fmt.Println(delimeter)
-	fmt.Printf("%s:%s\n", color.GreenString(r.FileName), color.GreenString(strconv.Itoa(r.LineNo)))
-	for _, head := range r.HeadLines {
+	fmt.Printf("%s:%s\n", color.GreenString(item.FileName), color.GreenString(strconv.Itoa(item.LineNo)))
+	for _, head := range item.HeadLines {
 		fmt.Println(head)
 	}
 
-	className := r.Matched[1]
+	className := item.Matched[1]
 	fmtClassName := color.New(color.Underline).Add(color.FgGreen).Sprintf("%s", className)
-	fmt.Println(strings.ReplaceAll(r.LineText, className, fmtClassName))
+	fmt.Println(strings.ReplaceAll(item.LineText, className, fmtClassName))
 	fmt.Println(delimeter)
 }
 
@@ -64,7 +65,7 @@ func (cmd *InfoDefine) Run() error {
 		return fmt.Errorf("empty target class names")
 	}
 
-	var patterns []*grepPattern
+	var patterns []*grep.Pattern
 	for _, namePattern := range cmd.ClassNames {
 		fixPattern := strings.ReplaceAll(namePattern, `.`, `[^\s]`)
 		expr := `_API\s+(` + fixPattern + `)[\s:{]`
@@ -73,12 +74,12 @@ func (cmd *InfoDefine) Run() error {
 			return fmt.Errorf("illegal regex expr %s: %w", expr, err)
 		}
 
-		patterns = append(patterns, &grepPattern{namePattern, expr, reg})
+		patterns = append(patterns, &grep.Pattern{Name: namePattern, Raw: expr, Regexp: reg})
 	}
 
 	searchDirs := getIncSourceSearchPaths(info.InstallPath)
-	results := grepManyDir(patterns, searchDirs)
-	for i, result := range results {
+	items := grep.GrepResult(patterns, searchDirs, grep.WithExts(".h", ".hpp"))
+	for i, result := range items {
 		if result.Error != nil {
 			core.LogE("fail to search in %s: %s", result.FileName, result.Error.Error())
 		} else {

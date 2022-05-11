@@ -10,9 +10,10 @@ import (
 
 // Args 是应用的基础命令行选项。
 type Args struct {
-	Debug   bool `arg:"--debug" help:"run with debug mode"`
-	Quite   bool `arg:"-q,--quite" help:"don't ask for user input"`
-	Verbose bool `arg:"-v,--verbose" help:"increase log verbosity level"`
+	Debug     bool   `arg:"--debug" help:"run with debug mode"`
+	Quite     bool   `arg:"-q,--quite" help:"don't ask for user input"`
+	Verbose   bool   `arg:"-v,--verbose" help:"increase log verbosity level"`
+	PProfFile string `arg:"--pprof" help:"dump profiling info to file"`
 }
 
 type globalData struct {
