@@ -6,9 +6,9 @@ import (
 
 // Cmd 是 info 子命令的集合。
 type Cmd struct {
-	EngineCommand    *EngineCmd     `arg:"subcommand:ue" help:"print associated engine info of the prject."`
-	EnumCommand      *EnumCmd       `arg:"subcommand:enum" help:"print available enum value."`
-	DefintionCommand *DefinitionCmd `arg:"subcommand:def" help:"find definition file of a UE class."`
+	EngineCommand    *InfoEngineCmd `arg:"subcommand:ue" help:"print associated engine info of the prject."`
+	EnumCommand      *InfoEnumCmd   `arg:"subcommand:enum" help:"print available enum value."`
+	DefintionCommand *InfoDefine    `arg:"subcommand:def" help:"find definition file of a UE class."`
 }
 
 // Run 实现了 subCmd 的接口。

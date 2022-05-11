@@ -45,39 +45,67 @@ func GetEngineVersion(projectFilePath string) (string, error) {
 	return file.EngineAssociation, nil
 }
 
-// FindEngineDir 获取特定版本的引擎的路径。
-func FindEngineDir(version string) (string, error) {
+type EngineInfo struct {
+	Version     string
+	InstallPath string
+}
+
+func trimPsOutput(s string) string {
+	return strings.Trim(strings.TrimSpace(s), "\"")
+}
+
+// FindAllEngineInfos 查找所有已安装的引擎信息。
+func FindAllEngineInfos() ([]*EngineInfo, error) {
 	sh := pwsh.New()
 
-	if len(version) == 0 {
-		version = "*"
-	}
-
 	stdOut, stdErr, err := sh.Execute(
-		`(Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EpicGames\Unreal Engine\` +
-			version + `").InstalledDirectory`)
+		`(Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EpicGames\Unreal Engine\*") | ` +
+			`%{ Write-Output $_.PSChildName $_.InstalledDirectory }`)
 
-	sp := strings.Split(stdOut, "\n")
-	if len(sp) == 0 {
-		return "", fmt.Errorf("Unreal engine not found")
-	}
-
-	for _, dir := range sp {
-		if len(dir) != 0 {
-			core.LogD("found engine dir: %s", dir)
-		}
-	}
-
-	engineDir := strings.Trim(strings.TrimSpace(sp[0]), "\"")
 	if stdErr != "" {
 		core.LogE("%s", stdErr)
 	}
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return engineDir, nil
+	sp := strings.Split(stdOut, "\n")
+	if len(sp) <= 1 {
+		return nil, fmt.Errorf("Unreal engine not found")
+	}
+
+	var infos []*EngineInfo
+	for i := 1; i < len(sp); i += 2 {
+		ver := trimPsOutput(sp[i-1])
+		path := trimPsOutput(sp[i])
+		infos = append(infos, &EngineInfo{
+			Version:     ver,
+			InstallPath: path,
+		})
+	}
+
+	return infos, nil
+}
+
+// FindEngineInfo 获取特定版本的引擎的路径。如果不指定 version，则返回找到的第一个版本的信息。
+func FindEngineInfo(version string) (*EngineInfo, error) {
+	infos, err := FindAllEngineInfos()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(version) == 0 && len(infos) != 0 {
+		return infos[0], nil
+	}
+
+	for _, info := range infos {
+		if info.Version == version {
+			return info, nil
+		}
+	}
+
+	return nil, fmt.Errorf("engine with version '%s' no found", version)
 }
 
 // ExecuteUbt 执行 Unreal Build Tool 的命令。

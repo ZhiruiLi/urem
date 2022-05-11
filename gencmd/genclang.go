@@ -19,18 +19,18 @@ func refreshClang(projectFilePath string) error {
 		return fmt.Errorf("get Unreal engine version: %w", err)
 	}
 
-	engineDir, err := unreal.FindEngineDir(ver)
+	info, err := unreal.FindEngineInfo(ver)
 	if err != nil {
-		return fmt.Errorf("find Unreal engine path: %w", err)
+		return fmt.Errorf("find Unreal engine info: %w", err)
 	}
 
-	err = unreal.ExecuteUbtGenProject(engineDir, "GenerateClangDatabase", projectFilePath)
+	err = unreal.ExecuteUbtGenProject(info.InstallPath, "GenerateClangDatabase", projectFilePath)
 	if err != nil {
 		return fmt.Errorf("generate clang database: %w", err)
 	}
 
 	projectDir := filepath.Dir(projectFilePath)
-	srcDbFile := filepath.Join(engineDir, "compile_commands.json")
+	srcDbFile := filepath.Join(info.InstallPath, "compile_commands.json")
 	dstDbFile := filepath.Join(projectDir, "compile_commands.json")
 	if err := osutil.CopyFile(srcDbFile, dstDbFile); err != nil {
 		return fmt.Errorf("copy clang database from %s to %s: %w", srcDbFile, dstDbFile, err)

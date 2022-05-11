@@ -68,13 +68,13 @@ func IsLegalLoadingPhase(t string) bool {
 	return core.StrContains(availableLoadingPhases, t)
 }
 
-// EnumCmd 实现了 enum 查询子命令。
-type EnumCmd struct {
+// InfoEnumCmd 实现了 enum 查询子命令。
+type InfoEnumCmd struct {
 	Target string `arg:"positional,required" help:"list target modtype/loadphase"`
 }
 
 // Run 执行 info enum 子命令。
-func (cmd *EnumCmd) Run() error {
+func (cmd *InfoEnumCmd) Run() error {
 	switch strings.ToLower(cmd.Target) {
 	case "modtype":
 		fmt.Println(GetFmtAvailableModuleTypes("\n"))

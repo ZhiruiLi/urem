@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/zhiruili/urem/core"
 	"github.com/zhiruili/urem/unreal"
 )
 
-// DefinitionCmd 是用于查找 UE 类定义位置的子命令。
-type DefinitionCmd struct {
+// InfoDefine 是用于查找 UE 类定义位置的子命令。
+type InfoDefine struct {
 	Version    string   `arg:"-v,--version" help:"UE version"`
 	ClassNames []string `arg:"positional,required" help:"target class names"`
 }
@@ -36,10 +37,10 @@ func fmtIncGrepResult(r *grepResult) string {
 }
 
 // Run 执行 UE 类定义位置查找逻辑。
-func (cmd *DefinitionCmd) Run() error {
-	engineDir, err := unreal.FindEngineDir(cmd.Version)
+func (cmd *InfoDefine) Run() error {
+	info, err := unreal.FindEngineInfo(cmd.Version)
 	if err != nil {
-		return fmt.Errorf("find Unreal engine path: %w", err)
+		return fmt.Errorf("find Unreal engine info: %w", err)
 	}
 
 	if len(cmd.ClassNames) == 0 {
@@ -47,17 +48,18 @@ func (cmd *DefinitionCmd) Run() error {
 	}
 
 	var patterns []*grepPattern
-	for _, name := range cmd.ClassNames {
-		expr := `_API\s+(` + name + `)\s*[:{]`
+	for _, namePattern := range cmd.ClassNames {
+		fixPattern := strings.ReplaceAll(namePattern, `.`, `[^\s]`)
+		expr := `_API\s+(` + fixPattern + `)[\s:{]`
 		reg, err := regexp.Compile(expr)
 		if err != nil {
 			return fmt.Errorf("illegal regex expr %s: %w", expr, err)
 		}
 
-		patterns = append(patterns, &grepPattern{name, expr, reg})
+		patterns = append(patterns, &grepPattern{namePattern, expr, reg})
 	}
 
-	searchDirs := getIncSourceSearchPaths(engineDir)
+	searchDirs := getIncSourceSearchPaths(info.InstallPath)
 	results := grepManyDir(patterns, searchDirs)
 	for _, result := range results {
 		if result.Error != nil {
