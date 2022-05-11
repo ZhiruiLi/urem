@@ -15,8 +15,6 @@ import (
 // InfoDefine 是用于查找 UE 类定义位置的子命令。
 type InfoDefine struct {
 	Version     string   `arg:"-v,--version" help:"UE version"`
-	FullPath    bool     `arg:"-f,--full" help:"print file full path"`
-	LineNo      bool     `arg:"-l,--line" help:"print definition line no in file"`
 	WithDetails bool     `arg:"-d,--detail" help:"print definition with details"`
 	ClassNames  []string `arg:"positional,required" help:"target class names"`
 }
@@ -29,24 +27,15 @@ func getIncSourceSearchPaths(engineDir string) []string {
 	}
 }
 
-func fmtIncGrepResult(r *grepResult, full bool, line bool) string {
+func fmtIncGrepResult(r *grepResult) string {
 	prefix := r.Matched[1] + " "
-	suffix := ""
-	if line {
-		suffix = fmt.Sprintf(":%d", r.LineNo)
-	}
-
-	if full {
-		return prefix + r.FileName + suffix
-	}
-
 	base := filepath.Base(r.FileName)
 	dir := filepath.Base(filepath.Dir(r.FileName))
 	if dir == "Public" || dir == "Private" || dir == "" {
-		return prefix + base + suffix
+		return prefix + base
 	}
 
-	return prefix + dir + "/" + base + suffix
+	return prefix + dir + "/" + base
 }
 
 var delimeter = color.BlueString(strings.Repeat("─", 120))
@@ -98,7 +87,7 @@ func (cmd *InfoDefine) Run() error {
 			}
 
 			core.LogD("%s match %s in %s:%d", result.Pattern, result.Matched[0], result.FileName, result.LineNo)
-			fmt.Println(fmtIncGrepResult(result, cmd.FullPath, cmd.LineNo))
+			fmt.Println(fmtIncGrepResult(result))
 			if cmd.WithDetails {
 				printDetailInfo(result)
 			}
