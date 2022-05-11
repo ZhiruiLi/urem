@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"embed"
 	"fmt"
 	"os"
@@ -56,18 +55,12 @@ func main() {
 	p := arg.MustParse(&args)
 
 	if len(args.PProfFile) != 0 {
-		prof, err := os.OpenFile(args.PProfFile, os.O_CREATE|os.O_RDWR, 0644)
-		if err != nil {
-			core.LogE("fail open profiling file: %s", err.Error())
-			os.Exit(-2)
-		}
-
-		defer prof.Close()
-		pprof.StartCPUProfile(bufio.NewWriter(prof))
+		prof, _ := os.OpenFile(args.PProfFile, os.O_CREATE|os.O_RDWR, 0644)
+		pprof.StartCPUProfile(prof)
 		defer func() {
 			pprof.StopCPUProfile()
 			fmt.Printf("done write profiling file, run:\n"+
-				"    go tool pprof -http=:9999 %s\n"+
+				"    go tool pprof -http=:1234 $(which urem) %s\n"+
 				"to see the result", args.PProfFile)
 		}()
 	}

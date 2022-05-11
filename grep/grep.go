@@ -58,7 +58,7 @@ type Item struct {
 
 // Grep 对指定目录进行查找，结果通过 onFound 函数输出。
 func Grep(patterns []*Pattern, dirnames []string, needGrep FilePredicate, onFound func(*Item) bool) {
-	ch := make(chan *Item, 10)
+	ch := make(chan *Item, 5)
 	ctx := &context{
 		waitGroup: &sync.WaitGroup{},
 		outItem:   ch,
