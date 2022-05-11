@@ -13,7 +13,7 @@ import (
 
 	"github.com/zhiruili/urem/core"
 	"github.com/zhiruili/urem/gencmd"
-	"github.com/zhiruili/urem/lscmd"
+	"github.com/zhiruili/urem/infocmd"
 	"github.com/zhiruili/urem/osutil"
 )
 
@@ -154,18 +154,18 @@ func checkOutputPath(outPath string) error {
 }
 
 func checkModuleType(mtype string) error {
-	if !lscmd.IsLegalModuleType(mtype) {
+	if !infocmd.IsLegalModuleType(mtype) {
 		return core.IllegalArgErrorf("ModuleType", "illegal value, must be oneof: %s",
-			lscmd.GetFmtAvailableModuleTypes(", "))
+			infocmd.GetFmtAvailableModuleTypes(", "))
 	}
 
 	return nil
 }
 
 func checkLoadingPhase(phase string) error {
-	if !lscmd.IsLegalLoadingPhase(phase) {
+	if !infocmd.IsLegalLoadingPhase(phase) {
 		return core.IllegalArgErrorf("LoadingPhase", "illegal value, must be oneof: %s",
-			lscmd.GetFmtAvailableLoadingPhases(", "))
+			infocmd.GetFmtAvailableLoadingPhases(", "))
 	}
 
 	return nil

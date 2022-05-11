@@ -1,4 +1,4 @@
-package lscmd
+package infocmd
 
 import (
 	"fmt"
@@ -68,13 +68,13 @@ func IsLegalLoadingPhase(t string) bool {
 	return core.StrContains(availableLoadingPhases, t)
 }
 
-// Cmd 实现了 ls 子命令。
-type Cmd struct {
+// EnumCmd 实现了 enum 查询子命令。
+type EnumCmd struct {
 	Target string `arg:"positional,required" help:"list target modtype/loadphase"`
 }
 
-// Run 执行 ls 子命令。
-func (cmd *Cmd) Run() error {
+// Run 执行 info enum 子命令。
+func (cmd *EnumCmd) Run() error {
 	switch strings.ToLower(cmd.Target) {
 	case "modtype":
 		fmt.Println(GetFmtAvailableModuleTypes("\n"))

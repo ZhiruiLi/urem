@@ -8,7 +8,6 @@ import (
 	"github.com/zhiruili/urem/core"
 	"github.com/zhiruili/urem/gencmd"
 	"github.com/zhiruili/urem/infocmd"
-	"github.com/zhiruili/urem/lscmd"
 	"github.com/zhiruili/urem/newcmd"
 )
 
@@ -26,7 +25,7 @@ func (*dummyCmd) Run() error {
 var (
 	_ subCmd = (*newcmd.Cmd)(nil)
 	_ subCmd = (*gencmd.Cmd)(nil)
-	_ subCmd = (*lscmd.Cmd)(nil)
+	_ subCmd = (*infocmd.Cmd)(nil)
 	_ subCmd = (*dummyCmd)(nil)
 )
 
@@ -34,12 +33,11 @@ type args struct {
 	core.Args
 	NewCommand  *newcmd.Cmd  `arg:"subcommand:new"`
 	GenCommand  *gencmd.Cmd  `arg:"subcommand:gen"`
-	LsCommand   *lscmd.Cmd   `arg:"subcommand:ls"`
 	InfoCommand *infocmd.Cmd `arg:"subcommand:info"`
 }
 
 func (args) Version() string {
-	return "URem 0.1.0"
+	return "URem 0.1.1"
 }
 
 //go:embed resources/*/*.tmpl
