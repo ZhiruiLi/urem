@@ -33,6 +33,23 @@ func StrContains(s []string, e string) bool {
 	return false
 }
 
+// StrSliceMap 映射一个字符串数组。
+func StrSliceMap(ss []string, mapper func(string) string) []string {
+	if len(ss) == 0 {
+		return nil
+	}
+
+	newss := make([]string, len(ss))
+	if mapper == nil {
+		copy(newss, ss)
+	} else {
+		for i, s := range ss {
+			newss[i] = mapper(s)
+		}
+	}
+	return newss
+}
+
 // LogD 打印 debug 级别的日志。
 func LogD(f string, a ...interface{}) {
 	if !Global.Verbose {

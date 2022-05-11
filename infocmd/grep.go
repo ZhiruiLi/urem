@@ -8,8 +8,10 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"sync"
 	"sync/atomic"
+	"unicode"
 
 	"github.com/zhiruili/urem/core"
 )
@@ -36,12 +38,13 @@ func (ctx *grepContext) isStopped() bool {
 }
 
 type grepResult struct {
-	Error    error
-	FileName string
-	Pattern  string
-	Matched  []string
-	LineNo   int
-	LineText string
+	Error     error
+	FileName  string
+	Pattern   string
+	Matched   []string
+	LineNo    int
+	LineText  string
+	HeadLines []string
 }
 
 func errorResult(filename string, e error) *grepResult {
@@ -55,9 +58,32 @@ func errorResultf(filename string, f string, a ...interface{}) *grepResult {
 	return errorResult(filename, fmt.Errorf(f, a...))
 }
 
+func trimMatchLine(line string) string {
+	return strings.TrimSpace(line)
+}
+
+func notSpace(r rune) bool {
+	return !unicode.IsSpace(r)
+}
+
+func trimContextLines(ctxLines []string, line string) []string {
+	spaceRuneNum := strings.IndexFunc(line, notSpace)
+	return core.StrSliceMap(ctxLines, func(cl string) string {
+		spaceRuneNum1 := strings.IndexFunc(cl, notSpace)
+		if spaceRuneNum1 > spaceRuneNum {
+			spaceRuneNum1 = spaceRuneNum
+		}
+		cl = cl[spaceRuneNum1:]
+		return strings.TrimRightFunc(cl, unicode.IsSpace)
+	})
+}
+
+var emptyLineRe = regexp.MustCompile(`^\s*$`)
+
 func grepForPattern(file *os.File, patterns []*grepPattern, ctx *grepContext) {
 	fileReader := bufio.NewReader(file)
 	lineIdx := 0
+	var headLines []string
 
 	for {
 		if ctx.isStopped() {
@@ -66,22 +92,6 @@ func grepForPattern(file *os.File, patterns []*grepPattern, ctx *grepContext) {
 		}
 
 		line, err := fileReader.ReadString('\n')
-		lineIdx++
-
-		for _, pattern := range patterns {
-			matched := pattern.Regexp.FindStringSubmatch(line)
-			if matched != nil {
-				ctx.OutResult <- &grepResult{
-					FileName: file.Name(),
-					Pattern:  pattern.Name,
-					Matched:  matched,
-					LineNo:   lineIdx,
-					LineText: line,
-				}
-				goto CONTINUE_OUT
-			}
-		}
-
 		if err == io.EOF {
 			return
 		}
@@ -89,6 +99,29 @@ func grepForPattern(file *os.File, patterns []*grepPattern, ctx *grepContext) {
 		if err != nil {
 			ctx.OutResult <- errorResultf(file.Name(), "read file: %w", err)
 		}
+
+		lineIdx++
+		if emptyLineRe.MatchString(line) {
+			headLines = nil
+			continue
+		}
+
+		for _, pattern := range patterns {
+			matched := pattern.Regexp.FindStringSubmatch(line)
+			if matched != nil {
+				ctx.OutResult <- &grepResult{
+					FileName:  file.Name(),
+					Pattern:   pattern.Name,
+					Matched:   matched,
+					LineNo:    lineIdx,
+					LineText:  trimMatchLine(line),
+					HeadLines: trimContextLines(headLines, line),
+				}
+				goto CONTINUE_OUT
+			}
+		}
+
+		headLines = append(headLines, strings.TrimRightFunc(line, unicode.IsSpace))
 	CONTINUE_OUT:
 	}
 }
