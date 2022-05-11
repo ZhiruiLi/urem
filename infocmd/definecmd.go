@@ -39,7 +39,7 @@ func fmtIncGrepResult(item *grep.Item) string {
 	return prefix + dir + "/" + base
 }
 
-var delimeter = color.BlueString(strings.Repeat("─", 120))
+var delimeter = color.BlueString(strings.Repeat("─", 80))
 
 func printDetailInfo(item *grep.Item) {
 	fmt.Println(delimeter)
