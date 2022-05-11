@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"unicode"
 
 	"github.com/zhiruili/urem/core"
@@ -25,16 +24,6 @@ type grepPattern struct {
 type grepContext struct {
 	WaitGroup *sync.WaitGroup
 	OutResult chan<- *grepResult
-
-	stopFlag int32
-}
-
-func (ctx *grepContext) stop() {
-	atomic.AddInt32(&ctx.stopFlag, 1)
-}
-
-func (ctx *grepContext) isStopped() bool {
-	return atomic.LoadInt32(&ctx.stopFlag) > 0
 }
 
 type grepResult struct {
@@ -86,11 +75,6 @@ func grepForPattern(file *os.File, patterns []*grepPattern, ctx *grepContext) {
 	var headLines []string
 
 	for {
-		if ctx.isStopped() {
-			core.LogD("early return %s:%d", file.Name(), lineIdx)
-			return
-		}
-
 		line, err := fileReader.ReadString('\n')
 		if err == io.EOF {
 			return
@@ -157,11 +141,6 @@ func grepOneDir(patterns []*grepPattern, dirname string, ctx *grepContext) {
 	}
 
 	for _, file := range files {
-		if ctx.isStopped() {
-			core.LogD("early return %s:%s", dirname, file)
-			return
-		}
-
 		fullPath := filepath.Join(dirname, file.Name())
 		if !file.IsDir() {
 			grepOneFile(patterns, fullPath, ctx)
