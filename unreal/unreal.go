@@ -45,6 +45,7 @@ func GetEngineVersion(projectFilePath string) (string, error) {
 	return file.EngineAssociation, nil
 }
 
+// EngineInfo 用于存放 UE 引擎的信息。
 type EngineInfo struct {
 	Version     string
 	InstallPath string
