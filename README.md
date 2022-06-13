@@ -60,7 +60,7 @@ urem info ue PATH_TO_THE_PROJECT_FILE
 #  urem info ue projects/MyUeProject/MyUeProject.uproject
 ```
 
-### 搜索一个类型的定义位置
+### 搜索一个类型或函数的定义位置
 
 方便确定应该 include 哪个头文件以及依赖哪个模块。
 
@@ -68,6 +68,7 @@ urem info ue PATH_TO_THE_PROJECT_FILE
 urem info def CLASS_NAME_PATTERN
 # Example:
 #  urem info def USkeletalMesh.*
+#  urem info def .*ShaderMap -d -f
 ```
 
 ### 查看枚举值

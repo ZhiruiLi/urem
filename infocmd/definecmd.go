@@ -15,9 +15,11 @@ import (
 
 // InfoDefine 是用于查找 UE 类定义位置的子命令。
 type InfoDefine struct {
-	Version     string   `arg:"-v,--version" help:"UE version"`
-	WithDetails bool     `arg:"-d,--detail" help:"print definition with details"`
-	ClassNames  []string `arg:"positional,required" help:"target class names"`
+	Version      string   `arg:"-v,--version" help:"UE version"`
+	WithDetails  bool     `arg:"-d,--detail" help:"print definition with details"`
+	ClassOnly    bool     `arg:"-c,--class" help:"search class or struct only"`
+	FunctionOnly bool     `arg:"-f,--function" help:"search function only"`
+	TargetNames  []string `arg:"positional,required" help:"target class/function names"`
 }
 
 func getIncSourceSearchPaths(engineDir string) []string {
@@ -61,16 +63,29 @@ func (cmd *InfoDefine) Run() error {
 		return fmt.Errorf("find Unreal engine info: %w", err)
 	}
 
-	if len(cmd.ClassNames) == 0 {
+	if len(cmd.TargetNames) == 0 {
 		return fmt.Errorf("empty target class names")
 	}
 
 	var patterns []*grep.Pattern
-	for _, namePattern := range cmd.ClassNames {
+	for _, namePattern := range cmd.TargetNames {
 		fixPattern := strings.ReplaceAll(namePattern, `.`, `[^\s]`)
-		exprs := []string{
-			`class\s+.*_API\s+(` + fixPattern + `)[\s:{]`,
-			`struct\s+.*_API\s+(` + fixPattern + `)[\s:{]`,
+		classPatten := `class\s+.*_API\s+(` + fixPattern + `)[\s:{]`
+		structPatten := `struct\s+.*_API\s+(` + fixPattern + `)[\s:{]`
+		functionPattern := `.*_API\s+.*\s+(` + fixPattern + `)\s*\(.*\)`
+
+		exprs := []string{}
+
+		if cmd.ClassOnly {
+			exprs = append(exprs, classPatten, structPatten)
+		}
+
+		if cmd.FunctionOnly {
+			exprs = append(exprs, functionPattern)
+		}
+
+		if !cmd.ClassOnly && !cmd.FunctionOnly {
+			exprs = append(exprs, classPatten, structPatten, functionPattern)
 		}
 
 		for _, expr := range exprs {

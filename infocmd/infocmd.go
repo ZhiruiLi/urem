@@ -8,7 +8,7 @@ import (
 type Cmd struct {
 	EngineCommand    *InfoEngineCmd `arg:"subcommand:ue" help:"print associated engine info of the prject."`
 	EnumCommand      *InfoEnumCmd   `arg:"subcommand:enum" help:"print available enum value."`
-	DefintionCommand *InfoDefine    `arg:"subcommand:def" help:"find definition file of a UE class."`
+	DefintionCommand *InfoDefine    `arg:"subcommand:def" help:"find definition file of a UE class or function."`
 }
 
 // Run 实现了 subCmd 的接口。
