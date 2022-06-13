@@ -68,13 +68,18 @@ func (cmd *InfoDefine) Run() error {
 	var patterns []*grep.Pattern
 	for _, namePattern := range cmd.ClassNames {
 		fixPattern := strings.ReplaceAll(namePattern, `.`, `[^\s]`)
-		expr := `_API\s+(` + fixPattern + `)[\s:{]`
-		reg, err := regexp.Compile(expr)
-		if err != nil {
-			return fmt.Errorf("illegal regex expr %s: %w", expr, err)
+		exprs := []string{
+			`class\s+.*_API\s+(` + fixPattern + `)[\s:{]`,
+			`struct\s+.*_API\s+(` + fixPattern + `)[\s:{]`,
 		}
 
-		patterns = append(patterns, &grep.Pattern{Name: namePattern, Raw: expr, Regexp: reg})
+		for _, expr := range exprs {
+			reg, err := regexp.Compile(expr)
+			if err != nil {
+				return fmt.Errorf("illegal regex expr %s: %w", expr, err)
+			}
+			patterns = append(patterns, &grep.Pattern{Name: namePattern, Raw: expr, Regexp: reg})
+		}
 	}
 
 	searchDirs := getIncSourceSearchPaths(info.InstallPath)

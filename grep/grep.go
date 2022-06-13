@@ -149,14 +149,14 @@ func trimContextLines(ctxLines []string, line string) []string {
 
 var emptyLineRe = regexp.MustCompile(`^\s*$`)
 
-func grepForPattern(file *os.File, patterns []*Pattern, ctx *context) {
-	fileReader := bufio.NewReader(file)
+func grepForPattern(name string, reader io.Reader, patterns []*Pattern, ctx *context) {
+	fileReader := bufio.NewReader(reader)
 	lineIdx := 0
 	var headLines []string
 
 	for {
 		if ctx.isStopped() {
-			core.LogD("early return %s:%d", file.Name(), lineIdx)
+			core.LogD("early return %s:%d", name, lineIdx)
 			return
 		}
 
@@ -166,7 +166,7 @@ func grepForPattern(file *os.File, patterns []*Pattern, ctx *context) {
 		}
 
 		if err != nil {
-			ctx.outItem <- errorItemf(file.Name(), "read file: %w", err)
+			ctx.outItem <- errorItemf(name, "read file: %w", err)
 		}
 
 		lineIdx++
@@ -187,7 +187,7 @@ func grepForPattern(file *os.File, patterns []*Pattern, ctx *context) {
 
 			if matched != nil {
 				ctx.outItem <- &Item{
-					FileName:  file.Name(),
+					FileName:  name,
 					Pattern:   pattern.Name,
 					Matched:   matched,
 					LineNo:    lineIdx,
@@ -218,7 +218,7 @@ func (ctx *context) grepOneFile(patterns []*Pattern, filename string) {
 	}
 	defer file.Close()
 
-	grepForPattern(file, patterns, ctx)
+	grepForPattern(file.Name(), file, patterns, ctx)
 }
 
 func (ctx *context) grepOneDir(patterns []*Pattern, dirname string) {

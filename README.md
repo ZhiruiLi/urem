@@ -11,6 +11,8 @@ urem --help
 
 ### 刷新工程
 
+方便从命令行刷新工程解决方案。
+
 ```bash
 urem gen vs PATH_TO_THE_PROJECT_FILE
 urem gen clang PATH_TO_THE_PROJECT_FILE
@@ -21,6 +23,8 @@ urem gen clang PATH_TO_THE_PROJECT_FILE
 
 ### 新增模块
 
+新增一个模块，并添加一些简单的常用定义。
+
 ```bash
 urem new mod MODULE_NAME MODULE_OUTPUT_PATH
 # Example:
@@ -30,6 +34,8 @@ urem new mod MODULE_NAME MODULE_OUTPUT_PATH
 
 ### 新增 gitignore 模板
 
+新增一个基础的 gitignore 文件。
+
 ```bash
 urem new ig PATH_TO_THE_PROJECT_FILE
 # Example:
@@ -37,6 +43,8 @@ urem new ig PATH_TO_THE_PROJECT_FILE
 ```
 
 ### 新增 clang-format 模板
+
+新增一个基础的 clang-format 文件，兼容 =UPROPERTY= 这些宏。
 
 ```bash
 urem new fmt PATH_TO_THE_PROJECT_FILE
@@ -52,15 +60,19 @@ urem info ue PATH_TO_THE_PROJECT_FILE
 #  urem info ue projects/MyUeProject/MyUeProject.uproject
 ```
 
-### 搜索一个接口的定义位置
+### 搜索一个类型的定义位置
+
+方便确定应该 include 哪个头文件以及依赖哪个模块。
 
 ```bash
 urem info def CLASS_NAME_PATTERN
 # Example:
-#  urem info def projects/MyUeProject/MyUeProject.uproject
+#  urem info def USkeletalMesh.*
 ```
 
 ### 查看枚举值
+
+方便查看新增模块时可以指定的枚举值。
 
 ``` bash
 urem info enum ENUM_TYPE
