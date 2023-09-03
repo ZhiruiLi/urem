@@ -7,7 +7,7 @@ endif
 
 .PHONY : clean, fmt, gen, test
 
-all : $(bin_file)
+build : $(bin_file)
 
 $(bin_file) : gen fmt $(srcfiles)
 	go build
