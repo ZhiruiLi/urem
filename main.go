@@ -55,7 +55,7 @@ func main() {
 	p := arg.MustParse(&args)
 
 	if len(args.PProfFile) != 0 {
-		prof, _ := os.OpenFile(args.PProfFile, os.O_CREATE|os.O_RDWR, 0644)
+		prof, _ := os.OpenFile(args.PProfFile, os.O_CREATE|os.O_RDWR, 0o644)
 		pprof.StartCPUProfile(prof)
 		defer func() {
 			pprof.StopCPUProfile()
