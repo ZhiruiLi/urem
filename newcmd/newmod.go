@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -56,7 +55,7 @@ func (cmd *NewModCmd) generateFile(info *genFileInfo, modulePath string, fs *emb
 		return "", fmt.Errorf("create dir %s for file %s", fileDir, filePath)
 	}
 
-	if err := ioutil.WriteFile(filePath, fileContent.Bytes(), 0644); err != nil {
+	if err := os.WriteFile(filePath, fileContent.Bytes(), 0644); err != nil {
 		return "", fmt.Errorf("write file %s", filePath)
 	}
 
@@ -108,13 +107,13 @@ func (cmd *NewModCmd) updateProjectJson(modulePath string) error {
 		return fmt.Errorf(".uproject or .uplugin file no found")
 	}
 
-	content, err := ioutil.ReadFile(filePath)
+	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return fmt.Errorf("read file %s", filePath)
 	}
 
 	updated := formatProjectJsonText(string(content), cmd.ModuleName, cmd.ModuleType, cmd.LoadingPhase)
-	if err := ioutil.WriteFile(filePath, []byte(updated), 0644); err != nil {
+	if err := os.WriteFile(filePath, []byte(updated), 0644); err != nil {
 		return fmt.Errorf("write file %s", filePath)
 	}
 

@@ -2,7 +2,7 @@ package newcmd
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/zhiruili/urem/core"
@@ -23,7 +23,7 @@ func generateClangFormatFile(projectFilePath string) error {
 	dir := filepath.Dir(projectFilePath)
 	outFile := filepath.Join(dir, ".clang-format")
 	core.LogD("write file to %s", outFile)
-	return ioutil.WriteFile(outFile, bs, 0644)
+	return os.WriteFile(outFile, bs, 0644)
 }
 
 // Run 执行创建命令。

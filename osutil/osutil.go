@@ -15,7 +15,6 @@ import (
 // IsDir 检查给定路径是否是一个目录。
 func IsDir(path string) (bool, error) {
 	stat, err := os.Stat(path)
-
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return false, nil
