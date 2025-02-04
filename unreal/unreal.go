@@ -113,7 +113,7 @@ func FindEngineInfo(version string) (*EngineInfo, error) {
 func ExecuteUbt(engineDir string, args string) error {
 	sh := pwsh.New()
 
-	binPath := filepath.Join(engineDir, "Engine", "Binaries", "DotNET", "UnrealBuildTool.exe")
+	binPath := filepath.Join(engineDir, "Engine", "Binaries", "DotNET", "UnrealBuildTool", "UnrealBuildTool.exe")
 	pwCmd := fmt.Sprintf("& \"%s\" %s", binPath, args)
 	stdOut, stdErr, err := sh.Execute(pwCmd)
 	if stdOut != "" {
