@@ -2,7 +2,6 @@ package gencmd
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/zhiruili/urem/osutil"
 	"github.com/zhiruili/urem/unreal"
@@ -24,16 +23,9 @@ func refreshClang(projectFilePath string) error {
 		return fmt.Errorf("find Unreal engine info: %w", err)
 	}
 
-	err = unreal.ExecuteUbtGenProject(info.InstallPath, "GenerateClangDatabase", projectFilePath)
+	err = unreal.ExecuteUbtGenProject(info.InstallPath, projectFilePath)
 	if err != nil {
 		return fmt.Errorf("generate clang database: %w", err)
-	}
-
-	projectDir := filepath.Dir(projectFilePath)
-	srcDbFile := filepath.Join(info.InstallPath, "compile_commands.json")
-	dstDbFile := filepath.Join(projectDir, "compile_commands.json")
-	if err := osutil.CopyFile(srcDbFile, dstDbFile); err != nil {
-		return fmt.Errorf("copy clang database from %s to %s: %w", srcDbFile, dstDbFile, err)
 	}
 
 	return nil

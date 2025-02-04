@@ -32,14 +32,15 @@ var (
 )
 
 type args struct {
-	core.Args
 	NewCommand  *newcmd.Cmd  `arg:"subcommand:new"`
 	GenCommand  *gencmd.Cmd  `arg:"subcommand:gen"`
 	InfoCommand *infocmd.Cmd `arg:"subcommand:info"`
+
+	core.Args
 }
 
 func (args) Version() string {
-	return "URem 0.1.1"
+	return "URem 0.2.0"
 }
 
 //go:embed resources/*/*.tmpl

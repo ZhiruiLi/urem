@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/zhiruili/urem/core"
+	"github.com/zhiruili/urem/osutil"
 	"github.com/zhiruili/urem/pwsh"
 )
 
@@ -127,10 +128,27 @@ func ExecuteUbt(engineDir string, args string) error {
 }
 
 // ExecuteUbtGenProject 执行 Unreal Build Tool 的工程构建命令。
-func ExecuteUbtGenProject(engineDir string, mode string, projectFilePath string) error {
+func ExecuteUbtGenProject(engineDir string, projectFilePath string) error {
 	projectFileName := filepath.Base(projectFilePath)
 	projectName := strings.TrimSuffix(projectFileName, filepath.Ext(projectFileName))
 	core.LogD("detect project name %s", projectName)
-	args := fmt.Sprintf("-mode=%s -project=\"%s\" -engine \"%s\" Development Win64", mode, projectFilePath, projectName)
-	return ExecuteUbt(engineDir, args)
+
+	// ref: https://github.com/natsu-anon/ue-assist/
+	args := fmt.Sprintf("-projectfiles -vscode -game -engine -dotnet -progress -noIntelliSense \"%s\"", projectFilePath)
+	if err := ExecuteUbt(engineDir, args); err != nil {
+		return fmt.Errorf("execute UBT: %w", err)
+	}
+
+	core.LogD("execute UBT %s success", projectFilePath)
+
+	projectDir := filepath.Dir(projectFilePath)
+	srcDbFileName := fmt.Sprintf("compileCommands_%s.json", projectName)
+	srcDbFilePath := filepath.Join(projectDir, ".vscode", srcDbFileName)
+	dstDbFilePath := filepath.Join(projectDir, "compile_commands.json")
+	if err := osutil.CopyFile(srcDbFilePath, dstDbFilePath); err != nil {
+		return fmt.Errorf("copy clang database from %s to %s: %w", srcDbFilePath, dstDbFilePath, err)
+	}
+
+	core.LogD("copy clang database %s to %s success", srcDbFilePath, dstDbFilePath)
+	return nil
 }
