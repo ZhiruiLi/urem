@@ -59,10 +59,15 @@ func trimPsOutput(s string) string {
 }
 
 // FindAllEngineInfos 查找所有已安装的引擎信息。
+// 需要根据不同平台参考 UE 自己的实现，这里先只处理 Windows 的情况，参考：
+// FDesktopPlatformWindows::EnumerateEngineInstallations
 func FindAllEngineInfos() ([]*EngineInfo, error) {
 	sh := pwsh.New()
+	var stdOut, stdErr string
+	var err error
+	var cmdResultList []string
 
-	stdOut, stdErr, err := sh.Execute(
+	stdOut, stdErr, err = sh.Execute(
 		`(Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EpicGames\Unreal Engine\*") | ` +
 			`%{ Write-Output $_.PSChildName $_.InstalledDirectory }`)
 
@@ -74,15 +79,36 @@ func FindAllEngineInfos() ([]*EngineInfo, error) {
 		return nil, err
 	}
 
-	sp := strings.Split(stdOut, "\n")
-	if len(sp) <= 1 {
+	core.LogD("find engine info 1 stdOut: %s", stdOut)
+	cmdResultList = append(cmdResultList, strings.Split(stdOut, "\n")...)
+
+	stdOut, stdErr, err = sh.Execute(
+		`(Get-ItemProperty "Registry::HKEY_CURRENT_USER\SOFTWARE\Epic Games\Unreal Engine\Builds").PSObject.Properties | ` +
+			`Where-Object { $_.Name -match '^\{.*\}$' } | %{ Write-Output $_.Value $_.Name }`)
+
+	if stdErr != "" {
+		core.LogE("%s", stdErr)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	core.LogD("find engine info 2 stdOut: %s", stdOut)
+	cmdResultList = append(cmdResultList, strings.Split(stdOut, "\n")...)
+
+	if len(cmdResultList) <= 1 {
 		return nil, fmt.Errorf("unreal engine not found")
 	}
 
 	var infos []*EngineInfo
-	for i := 1; i < len(sp); i += 2 {
-		ver := trimPsOutput(sp[i-1])
-		path := trimPsOutput(sp[i])
+	for i := 1; i < len(cmdResultList); i += 2 {
+		ver := trimPsOutput(cmdResultList[i-1])
+		path := trimPsOutput(cmdResultList[i])
+		if len(ver) == 0 || len(path) == 0 {
+			continue
+		}
+
 		infos = append(infos, &EngineInfo{
 			Version:     ver,
 			InstallPath: path,
