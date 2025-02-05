@@ -75,7 +75,7 @@ func FindAllEngineInfos() ([]*EngineInfo, error) {
 
 	sp := strings.Split(stdOut, "\n")
 	if len(sp) <= 1 {
-		return nil, fmt.Errorf("Unreal engine not found")
+		return nil, fmt.Errorf("unreal engine not found")
 	}
 
 	var infos []*EngineInfo
