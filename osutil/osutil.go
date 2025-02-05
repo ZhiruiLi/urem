@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -73,7 +71,7 @@ func matchAnyPattern(s string, patterns ...string) (string, bool) {
 	return "", false
 }
 
-func findFirstFileMatchPattern(files []fs.FileInfo, patterns ...string) (string, bool) {
+func findFirstFileMatchPattern(files []os.DirEntry, patterns ...string) (string, bool) {
 	for _, file := range files {
 		if !file.IsDir() {
 			_, match := matchAnyPattern(file.Name(), patterns...)
@@ -93,7 +91,7 @@ func FindFileBottomUp(p string, patterns ...string) (string, error) {
 	}
 
 	for {
-		files, err := ioutil.ReadDir(dir)
+		files, err := os.ReadDir(dir)
 		if err != nil {
 			return "", err
 		}
