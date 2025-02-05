@@ -1,6 +1,7 @@
 package unreal
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -106,6 +107,21 @@ func FindEngineInfo(version string) (*EngineInfo, error) {
 		if info.Version == version {
 			return info, nil
 		}
+	}
+
+	if core.Global.Verbose {
+		var buf bytes.Buffer
+		for i, info := range infos {
+			if i > 0 {
+				buf.WriteString("\n")
+			}
+
+			buf.WriteString(info.Version)
+			buf.WriteString(": ")
+			buf.WriteString(info.InstallPath)
+		}
+
+		core.LogD("installed engines:\n%s", buf.String())
 	}
 
 	return nil, fmt.Errorf("engine with version '%s' no found", version)
