@@ -13,7 +13,8 @@ type InfoEngineCmd struct {
 }
 
 func printEngineInfo(projectFilePath string) error {
-	ver, err := unreal.GetEngineVersion(projectFilePath)
+	projectInfo := &unreal.ProjectInfo{ProjectFilePath: projectFilePath}
+	ver, err := projectInfo.GetEngineVersion()
 	if err != nil {
 		return fmt.Errorf("get Unreal engine version: %s", err.Error())
 	}

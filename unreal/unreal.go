@@ -8,29 +8,42 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/iancoleman/orderedmap"
-
 	"github.com/zhiruili/urem/core"
 	"github.com/zhiruili/urem/pwsh"
 )
 
-type uprojectFile struct {
-	EngineAssociation string
-	Category          string
-	Description       string
-	Modules           []moduleMetaInfo
-	FileVersion       int
+type ProjectInfo struct {
+	ProjectFilePath string
 }
 
-type moduleMetaInfo struct {
-	Name         string
-	Type         string
-	LoadingPhase string
+func (pi *ProjectInfo) ProjectFileName() string {
+	return filepath.Base(pi.ProjectFilePath)
+}
+
+func (pi *ProjectInfo) ProjectName() string {
+	projectFileName := pi.ProjectFileName()
+	return strings.TrimSuffix(projectFileName, filepath.Ext(projectFileName))
+}
+
+func (pi *ProjectInfo) ProjectDir() string {
+	return filepath.Dir(pi.ProjectFilePath)
+}
+
+func (pi *ProjectInfo) ProjectVscodeDir() string {
+	return filepath.Join(pi.ProjectDir(), ".vscode")
+}
+
+func (pi *ProjectInfo) ProjectClangDbName() string {
+	return fmt.Sprintf("compileCommands_%s.json", pi.ProjectName())
+}
+
+func (pi *ProjectInfo) ProjectClangDbPath() string {
+	return filepath.Join(pi.ProjectVscodeDir(), pi.ProjectClangDbName())
 }
 
 // GetEngineVersion 获取工程所用的引擎版本。
-func GetEngineVersion(projectFilePath string) (string, error) {
-	content, err := os.ReadFile(projectFilePath)
+func (pi *ProjectInfo) GetEngineVersion() (string, error) {
+	content, err := os.ReadFile(pi.ProjectFilePath)
 	if err != nil {
 		return "", fmt.Errorf("open project file: %w", err)
 	}
@@ -46,6 +59,20 @@ func GetEngineVersion(projectFilePath string) (string, error) {
 	}
 
 	return file.EngineAssociation, nil
+}
+
+type uprojectFile struct {
+	EngineAssociation string
+	Category          string
+	Description       string
+	Modules           []moduleMetaInfo
+	FileVersion       int
+}
+
+type moduleMetaInfo struct {
+	Name         string
+	Type         string
+	LoadingPhase string
 }
 
 // EngineInfo 用于存放 UE 引擎的信息。
@@ -170,9 +197,9 @@ func ExecuteUbt(engineDir string, args string) error {
 	return err
 }
 
-// generateClangdFlagsFile 生成 clangd_args 文件，用于指定 clangd 的额外参数。
+// GenerateClangdFlagsFile 生成 clangd_args 文件，用于指定 clangd 的额外参数。
 // ref: https://github.com/natsu-anon/ue-assist/
-func generateClangdFlagsFile(projectDir string) (string, error) {
+func GenerateClangdFlagsFile(projectDir string) (string, error) {
 	bs, err := core.Global.EmbedFs.ReadFile("resources/compile/clangd_args.tmpl")
 	if err != nil {
 		return "", fmt.Errorf("load clangd_args file template: %w", err)
@@ -186,57 +213,15 @@ func generateClangdFlagsFile(projectDir string) (string, error) {
 // ExecuteUbtGenProject 执行 Unreal Build Tool 的工程构建命令。
 // 目前的实现参考了 ue-assist 项目，通过生成 vscode 的配置文件来产出 clangd 使用的 DB 文件。
 // ref: https://github.com/natsu-anon/ue-assist/
-func ExecuteUbtGenProject(engineDir string, projectFilePath string) error {
-	projectFileName := filepath.Base(projectFilePath)
-	projectName := strings.TrimSuffix(projectFileName, filepath.Ext(projectFileName))
+func ExecuteUbtGenProject(engineDir string, projectInfo *ProjectInfo) error {
+	projectName := projectInfo.ProjectName()
 	core.LogD("detect project name %s", projectName)
 
-	args := fmt.Sprintf("-projectfiles -vscode -game -engine -dotnet -progress -noIntelliSense \"%s\"", projectFilePath)
+	args := fmt.Sprintf("-projectfiles -vscode -game -engine -dotnet -progress -noIntelliSense \"%s\"", projectInfo.ProjectFilePath)
 	if err := ExecuteUbt(engineDir, args); err != nil {
 		return fmt.Errorf("execute UBT: %w", err)
 	}
 
-	core.LogD("execute UBT %s success", projectFilePath)
-
-	projectDir := filepath.Dir(projectFilePath)
-	clangdFile, err := generateClangdFlagsFile(projectDir)
-	if err != nil {
-		return fmt.Errorf("generate clangd_args file: %w", err)
-	}
-
-	core.LogD("generate clangd_args file %s success", clangdFile)
-
-	srcDbFileName := fmt.Sprintf("compileCommands_%s.json", projectName)
-	srcDbFilePath := filepath.Join(projectDir, ".vscode", srcDbFileName)
-	srcDbDataRaw, err := os.ReadFile(srcDbFilePath)
-
-	// var dbDataArray []map[string]interface{}
-	var dbDataArray []orderedmap.OrderedMap
-	if err := json.Unmarshal(srcDbDataRaw, &dbDataArray); err != nil {
-		return fmt.Errorf("unmarshal src clang database: %w", err)
-	}
-
-	clangdExtraArgs := fmt.Sprintf("@%s", clangdFile)
-	for _, elem := range dbDataArray {
-		args, ok := elem.Get("arguments")
-		if !ok {
-			continue
-		}
-
-		args = append(args.([]interface{}), clangdExtraArgs)
-		elem.Set("arguments", args)
-	}
-
-	dstDbFilePath := filepath.Join(projectDir, "compile_commands.json")
-	dstDbDataRaw, err := json.MarshalIndent(dbDataArray, "", "\t")
-	if err != nil {
-		return fmt.Errorf("marshal dst clang database: %w", err)
-	}
-
-	if err := os.WriteFile(dstDbFilePath, dstDbDataRaw, 0644); err != nil {
-		return fmt.Errorf("write dst clang database to %s: %w", dstDbFilePath, err)
-	}
-
-	core.LogD("generate clang database from %s to %s success", srcDbFilePath, dstDbFilePath)
+	core.LogD("execute UBT %s success", projectInfo.ProjectFilePath)
 	return nil
 }
