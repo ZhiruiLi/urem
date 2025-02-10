@@ -40,7 +40,7 @@ type args struct {
 }
 
 func (args) Version() string {
-	return "URem 0.2.0"
+	return "URem 0.3.0"
 }
 
 //go:embed resources/*/*.tmpl
