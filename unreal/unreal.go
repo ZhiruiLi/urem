@@ -86,7 +86,7 @@ func trimPsOutput(s string) string {
 }
 
 // FindAllEngineInfos 查找所有已安装的引擎信息。
-// 需要根据不同平台参考 UE 自己的实现，这里先只处理 Windows 的情况，参考：
+// 需要根据不同平台参考 UE 自己的实现，这里先只处理 Windows 的情况，参考 UE 的实现：
 // FDesktopPlatformWindows::EnumerateEngineInstallations
 func FindAllEngineInfos() ([]*EngineInfo, error) {
 	sh := pwsh.New()
@@ -106,12 +106,13 @@ func FindAllEngineInfos() ([]*EngineInfo, error) {
 		return nil, err
 	}
 
-	core.LogD("find engine info 1 stdOut: %s", stdOut)
+	stdOut = strings.TrimSpace(stdOut)
+	core.LogD("find engine info 1 stdOut:\n%s", stdOut)
 	cmdResultList = append(cmdResultList, strings.Split(stdOut, "\n")...)
 
 	stdOut, stdErr, err = sh.Execute(
 		`(Get-ItemProperty "Registry::HKEY_CURRENT_USER\SOFTWARE\Epic Games\Unreal Engine\Builds").PSObject.Properties | ` +
-			`Where-Object { $_.Name -match '^\{.*\}$' } | %{ Write-Output $_.Value $_.Name }`)
+			`Where-Object { $_.Name -match '^\{.*\}$' } | %{ Write-Output $_.Name $_.Value }`)
 
 	if stdErr != "" {
 		core.LogE("%s", stdErr)
@@ -121,7 +122,8 @@ func FindAllEngineInfos() ([]*EngineInfo, error) {
 		return nil, err
 	}
 
-	core.LogD("find engine info 2 stdOut: %s", stdOut)
+	stdOut = strings.TrimSpace(stdOut)
+	core.LogD("find engine info 2 stdOut:\n%s", stdOut)
 	cmdResultList = append(cmdResultList, strings.Split(stdOut, "\n")...)
 
 	if len(cmdResultList) <= 1 {
@@ -135,6 +137,8 @@ func FindAllEngineInfos() ([]*EngineInfo, error) {
 		if len(ver) == 0 || len(path) == 0 {
 			continue
 		}
+
+		core.LogD("find engine info %d: ver %s path %s", i/2, ver, path)
 
 		infos = append(infos, &EngineInfo{
 			Version:     ver,
@@ -184,7 +188,10 @@ func FindEngineInfo(version string) (*EngineInfo, error) {
 func ExecuteUbt(engineDir string, args string) error {
 	sh := pwsh.New()
 
-	binPath := filepath.Join(engineDir, "Engine", "Binaries", "DotNET", "UnrealBuildTool", "UnrealBuildTool.exe")
+	// 参考 UE 的实现：
+	// FDesktopPlatformWindows::RunUnrealBuildTool
+	// 这个函数中使用的路径是：Engine/Build/BatchFiles/Build.bat
+	binPath := filepath.Join(engineDir, "Engine", "Build", "BatchFiles", "Build.bat")
 	pwCmd := fmt.Sprintf("& \"%s\" %s", binPath, args)
 	stdOut, stdErr, err := sh.Execute(pwCmd)
 	if stdOut != "" {
@@ -211,13 +218,15 @@ func GenerateClangdFlagsFile(projectDir string) (string, error) {
 }
 
 // ExecuteUbtGenProject 执行 Unreal Build Tool 的工程构建命令。
-// 目前的实现参考了 ue-assist 项目，通过生成 vscode 的配置文件来产出 clangd 使用的 DB 文件。
-// ref: https://github.com/natsu-anon/ue-assist/
+// 目前的实现参考了 ue-assist 项目，通过生成 vscode 的配置文件来产出 clangd 使用的 DB 文件，参考：
+// https://github.com/natsu-anon/ue-assist/
+// 不过内容需要根据 UE 的实现进行调整，参考：
+// FDesktopPlatformBase::GenerateProjectFiles
 func ExecuteUbtGenProject(engineDir string, projectInfo *ProjectInfo) error {
 	projectName := projectInfo.ProjectName()
 	core.LogD("detect project name %s", projectName)
 
-	args := fmt.Sprintf("-projectfiles -vscode -game -engine -dotnet -progress -noIntelliSense \"%s\"", projectInfo.ProjectFilePath)
+	args := fmt.Sprintf("-projectfiles -project='%s' -game -engine -progress", projectInfo.ProjectFilePath)
 	if err := ExecuteUbt(engineDir, args); err != nil {
 		return fmt.Errorf("execute UBT: %w", err)
 	}
