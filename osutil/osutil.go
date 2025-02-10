@@ -10,6 +10,22 @@ import (
 	"github.com/zhiruili/urem/core"
 )
 
+// FindFirstFileWithExtension 在指定目录中查找第一个指定扩展名的文件。
+func FindFirstFileWithExtension(dir string, ext string) (string, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return "", err
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() && filepath.Ext(entry.Name()) == ext {
+			return filepath.Join(dir, entry.Name()), nil
+		}
+	}
+
+	return "", fmt.Errorf("no %s file found in directory: %s", ext, dir)
+}
+
 // IsDir 检查给定路径是否是一个目录。
 func IsDir(path string) (bool, error) {
 	stat, err := os.Stat(path)
