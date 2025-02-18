@@ -24,5 +24,5 @@ func (cmd *Cmd) Run() error {
 		return cmd.NewAttributeCommand.Run()
 	}
 
-	return fmt.Errorf("missing target: mod/fmt/ig")
+	return fmt.Errorf("missing target: mod/fmt/ig/attr")
 }
